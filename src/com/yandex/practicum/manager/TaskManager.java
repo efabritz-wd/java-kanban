@@ -10,37 +10,22 @@ import java.util.Set;
 public class TaskManager {
     private int idCounter = 0;
 
-    HashMap<Integer, Task> taskMap = new HashMap<>();
-    HashMap<Integer, SubTask> subtaskMap = new HashMap<>();
-    HashMap<Integer, Epic> epicMap = new HashMap<>();
+    protected HashMap<Integer, Task> taskMap = new HashMap<>();
+    protected HashMap<Integer, SubTask> subtaskMap = new HashMap<>();
+    protected HashMap<Integer, Epic> epicMap = new HashMap<>();
 
-    /* Task */
-    public Task createTask(String title, String description) {
-        if(title == null) {
-            System.out.println("Невозможно создать задачу без названия!");
-            return null;
-        }
-        if(description == null) {
-            System.out.println("Задача без описания!");
-            Task task = new Task(++idCounter, title);
-            taskMap.put(task.getId(), task);
-            System.out.println("Задача без описания добавлена!");
-            return task;
-        } else {
-            Task task = new Task(++idCounter, title, description);
-            taskMap.put(task.getId(), task);
-            System.out.println("Задача добавлена!");
-            return task;
-        }
+    public int getNextId() {
+        return idCounter++;
     }
 
-    public void updateTask(Task task, int taskId) {
-        if(!taskMap.containsKey(taskId)) {
-            System.out.println("Задачи с id: " + taskId + " не существует!");
-            return;
-        }
+    /* Task */
+    public void createTask(Task task) {
+        taskMap.put(task.getId(), task);
+        System.out.println("Задача добавлена!");
+    }
 
-        taskMap.put(taskId, task);
+    public void updateTask(Task task) {
+        taskMap.put(task.getId(), task);
         System.out.println("Задача " + task + " обновлена.");
     }
 
@@ -73,26 +58,14 @@ public class TaskManager {
     }
 
     /* Epic */
-    public Epic createEpic(String title) {
-        if(title == null) {
-            System.out.println("Невозможно создать эпик без названия!");
-            return null;
-        }
-
-        Epic epic = new Epic(++idCounter, title);
+    public void createEpic(Epic epic) {
         epicMap.put(epic.getId(), epic);
         System.out.println("Эпик без задач добавлен!");
-        return epic;
-
     }
 
-    public void updateEpic(Epic epic, int epicId) {
-        if(!epicMap.containsKey(epicId)) {
-            System.out.println("Эпика с id: " + epicId + " не существует!");
-            return;
-        }
+    public void updateEpic(Epic epic) {
         checkStatus(epic);
-        epicMap.put(epicId, epic);
+        epicMap.put(epic.getId(), epic);
         System.out.println("Эпик " + epic + " обновлен.");
     }
 
@@ -103,27 +76,27 @@ public class TaskManager {
             return;
         }
 
-        //проверка, все ли подзадачи со статусом DONE
-        boolean allDone = true;
-        for(SubTask subtask: subtasks) {
-            if(subtask.getStatus() == TaskStatus.DONE) {
-                allDone = allDone && true;
-            } else {
-                allDone = allDone && false;
-            }
-        }
-
-        if(allDone) {
-            epic.setStatus(TaskStatus.DONE);
-            return;
-        }
-
         //проверка на хотя бы одну задачу IN_PROGRESS
+        //проверка, все ли подзадачи со статусом DONE, NEW
+        int tasksDone = 0;
+        int tasksNew = 0;
         for(SubTask subtask: subtasks) {
             if(subtask.getStatus() == TaskStatus.IN_PROGRESS) {
                 epic.setStatus(TaskStatus.IN_PROGRESS);
                 return;
             }
+
+            if(subtask.getStatus() == TaskStatus.DONE) {
+                tasksDone++;
+            } else if(subtask.getStatus() == TaskStatus.NEW) {
+                tasksNew++;
+            }
+        }
+
+        if(tasksDone == subtasks.size()) {
+            epic.setStatus(TaskStatus.DONE);
+        } else if(tasksNew == subtasks.size()) {
+            epic.setStatus(TaskStatus.NEW);
         }
     }
     
@@ -167,53 +140,28 @@ public class TaskManager {
     }
 
     /* SubTask */
-    public void updateSubTask(SubTask task, int subtaskId) {
-        if(!subtaskMap.containsKey(subtaskId)) {
-            System.out.println("Подзадачи с id: " + subtaskId + " не существует!");
-            return;
-        }
+    public void updateSubTask(SubTask task) {
+        subtaskMap.put(task.getId(), task);
 
-        subtaskMap.put(subtaskId, task);
-
-        int epicId = subtaskMap.get(subtaskId).getEpic();
+        int epicId = subtaskMap.get(task.getId()).getEpic();
         Epic epic = epicMap.get(epicId);
         checkStatus(epic);
 
         System.out.println("Подзадача " + task + " обновлена.");
     }
 
-    public SubTask createSubTask(String title, String description, int epicId) {
-        if(!epicMap.containsKey(epicId)) {
-            System.out.println("Эпика с id: " + epicId + " не существует!" + "\'"
-                    + "Невозможно создать подзадачу");
-            return null;
-        }
+    public SubTask createSubTask(SubTask subtask) {
 
-        if(title == null) {
-            System.out.println("Невозможно создать подзадачу без названия!");
-            return null;
-        }
-        SubTask taskCreated = null;
+        subtaskMap.put(subtask.getId(), subtask);
+        System.out.println("Подзадача добавлена!");
 
-        if(description == null) {
-            System.out.println("Подзадача без описания!");
-            SubTask task = new SubTask(++idCounter, title, epicId);
-            subtaskMap.put(task.getId(), task);
-            taskCreated = task;
-            System.out.println("Подзадача без описания добавлена!");
-        } else {
-            SubTask task = new SubTask(++idCounter, title, description, epicId);
-            subtaskMap.put(task.getId(), task);
-            System.out.println("Подзадача добавлена!");
-            taskCreated = task;
-        }
-        Epic epic = epicMap.get(epicId);
+        Epic epic = epicMap.get(subtask.getEpic());
 
         ArrayList<SubTask> subtasks = epic.getSubTasks() == null ? new ArrayList<>() : epic.getSubTasks();
-        subtasks.add(taskCreated);
+        subtasks.add(subtask);
         epic.setSubTasks(subtasks);
         checkStatus(epic);
-        return taskCreated;
+        return subtask;
     }
 
     public ArrayList<SubTask> getAllSubTasks() {

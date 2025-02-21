@@ -7,20 +7,32 @@ public class Main {
     public static void main(String[] args) {
 
         TaskManager taskManager = new TaskManager();
-        Task taskFirst = taskManager.createTask("сортировка мусора", "сортировать мусор по категориям");
-        Task taskSecond = taskManager.createTask("собрать документы", "найти и собрать документы");
+        Task taskFirst = new Task(taskManager.getNextId(), "сортировка мусора", "сортировать мусор по категориям");
+        Task taskSecond = new Task(taskManager.getNextId(), "собрать документы", "найти и собрать документы");
+        taskManager.createTask(taskFirst);
+        taskManager.createTask(taskSecond);
         System.out.println(taskManager.getAllTasks());
-        Epic epic = taskManager.createEpic("Поездка домой");
 
-        SubTask subtaskFirst = taskManager.createSubTask("Билеты", "Заказать билеты", epic.getId());
-        SubTask subTaskSecond = taskManager.createSubTask("Документы", "Проверить документы", epic.getId());
+        Epic epic = new Epic(taskManager.getNextId(), "Поездка домой");
+        taskManager.createEpic(epic);
 
-        Epic epicSecond = taskManager.createEpic("Кружки детей");
-        taskManager.createSubTask("Купить инструмент", "    Выбрать и заказать инструмент", epicSecond.getId());
+        SubTask subtaskFirst = new SubTask(taskManager.getNextId(), "Билеты", "Заказать билеты", epic.getId());
+        SubTask subTaskSecond =  new SubTask(taskManager.getNextId(),"Документы", "Проверить документы", epic.getId());
 
-        Epic epicThird = taskManager.createEpic("Тест");
-        SubTask subtaskToDelete = taskManager.createSubTask("Пеовый тест", "Провести первый тест", epicThird.getId());
-        taskManager.createSubTask("Второй тест", "Провести второй тест", epicThird.getId());
+        taskManager.createSubTask(subtaskFirst);
+        taskManager.createSubTask(subTaskSecond);
+
+        Epic epicSecond = new Epic(taskManager.getNextId(), "Кружки");
+        taskManager.createEpic(epicSecond);
+        SubTask subTaskThird = new SubTask(taskManager.getNextId(), "Купить инструмент", "Выбрать и заказать инструмент", epicSecond.getId());
+        taskManager.createSubTask(subTaskThird);
+
+        Epic epicThird = new Epic(taskManager.getNextId(), "Тест");
+        taskManager.createEpic(epicThird);
+        SubTask subtaskToDelete = new SubTask(taskManager.getNextId(), "Пеовый тест", "Провести первый тест", epicThird.getId());
+        taskManager.createSubTask(subtaskToDelete);
+        SubTask subtaskToDeleteSecond = new SubTask(taskManager.getNextId(), "Второй тест", "Провести второй тест", epicThird.getId());
+        taskManager.createSubTask(subtaskToDeleteSecond);
 
         System.out.println("Задачи: " + taskManager.getAllTasks());
         System.out.println("Подзадачи: " + taskManager.getAllSubTasks());
@@ -32,22 +44,27 @@ public class Main {
         }
 
         taskFirst.setStatus(TaskStatus.IN_PROGRESS);
-        taskManager.updateTask(taskFirst, taskFirst.getId());
+        taskManager.updateTask(taskFirst);
         System.out.println("Статус задачи изменен:" + taskManager.taskMap.get(taskFirst.getId()).getStatus());
 
         subtaskFirst.setStatus(TaskStatus.DONE);
         subTaskSecond.setStatus(TaskStatus.DONE);
         System.out.println("Статус эпика до update: " + epic.getStatus());
-        taskManager.updateSubTask(subtaskFirst, subtaskFirst.getId());
-        taskManager.updateSubTask(subTaskSecond, subTaskSecond.getId());
+        taskManager.updateSubTask(subtaskFirst);
+        taskManager.updateSubTask(subTaskSecond);
         System.out.println("Статус подзадачи изменен:" + taskManager.subtaskMap.get(subtaskFirst.getId()).getStatus());
         System.out.println("Статус подзадачи изменен:" + taskManager.subtaskMap.get(subTaskSecond.getId()).getStatus());
         System.out.println("Статус эпика после update: " + epic.getStatus());
 
         subtaskToDelete.setStatus(TaskStatus.IN_PROGRESS);
         System.out.println("Статус третьего эпика до update: " + epicThird.getStatus());
-        taskManager.updateSubTask(subtaskToDelete, subtaskToDelete.getId());
+        taskManager.updateSubTask(subtaskToDelete);
         System.out.println("Статус третьего эпика после update: " + epicThird.getStatus());
+
+        subtaskToDelete.setStatus(TaskStatus.NEW);
+        System.out.println("Статус третьего эпика до update 2: " + epicThird.getStatus());
+        taskManager.updateSubTask(subtaskToDelete);
+        System.out.println("Статус третьего эпика после update 2: " + epicThird.getStatus());
 
         taskManager.deleteTaskById(taskFirst.getId());
         System.out.println("После удаления задачи " + taskManager.getAllTasks());

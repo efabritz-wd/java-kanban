@@ -3,8 +3,7 @@ package com.yandex.practicum.tasks;
 import java.util.ArrayList;
 
 public class Epic extends Task {
-    protected ArrayList<SubTask> subTasks;
-
+    protected ArrayList<SubTask> subTasks = new ArrayList<>();
 
     public Epic(int id, String title) {
         super(id, title);
