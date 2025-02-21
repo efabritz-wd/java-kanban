@@ -17,12 +17,12 @@ public class Task {
                 '}';
     }
 
-    public Task(int id, String title) {
+    public Task(String title) {
         this.id = id;
         this.title = title;
     }
 
-    public Task(int id, String title, String description) {
+    public Task(String title, String description) {
         this.id = id;
         this.title = title;
         this.description = description;

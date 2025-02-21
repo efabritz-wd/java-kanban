@@ -20,6 +20,7 @@ public class TaskManager {
 
     /* Task */
     public void createTask(Task task) {
+        task.setId(getNextId());
         taskMap.put(task.getId(), task);
         System.out.println("Задача добавлена!");
     }
@@ -59,6 +60,7 @@ public class TaskManager {
 
     /* Epic */
     public void createEpic(Epic epic) {
+        epic.setId(getNextId());
         epicMap.put(epic.getId(), epic);
         System.out.println("Эпик без задач добавлен!");
     }
@@ -151,7 +153,7 @@ public class TaskManager {
     }
 
     public SubTask createSubTask(SubTask subtask) {
-
+        subtask.setId(getNextId());
         subtaskMap.put(subtask.getId(), subtask);
         System.out.println("Подзадача добавлена!");
 

@@ -11,13 +11,13 @@ public class SubTask extends Task {
         this.epic = epic;
     }
 
-    public SubTask(int id, String title, int epic) {
-        super(id, title);
+    public SubTask(String title, int epic) {
+        super(title);
         this.epic = epic;
     }
 
-    public SubTask(int id, String title, String description, int epic) {
-        super(id, title, description);
+    public SubTask(String title, String description, int epic) {
+        super(title, description);
         this.epic = epic;
     }
 }
