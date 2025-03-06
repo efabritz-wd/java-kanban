@@ -2,10 +2,13 @@ package com.yandex.practicum.manager;
 
 public class Managers {
 
+    private static TaskManager taskManager;
     private static HistoryManager historyManager;
 
-    public TaskManager getDefault() {
-        TaskManager taskManager = new InMemoryTaskManager();
+    public static TaskManager getDefault() {
+        if(taskManager == null) {
+            taskManager = new InMemoryTaskManager();
+        }
         return taskManager;
     }
 

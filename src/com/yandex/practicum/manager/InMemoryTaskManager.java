@@ -182,6 +182,10 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public SubTask createSubTask(SubTask subtask) {
         subtask.setId(getNextId());
+        if (subtask.getEpic() == subtask.getId()) {
+            System.out.println("Id подзадачи не может быть равен id эпика");
+            return null;
+        }
         subtaskMap.put(subtask.getId(), subtask);
         System.out.println("Подзадача добавлена!");
 

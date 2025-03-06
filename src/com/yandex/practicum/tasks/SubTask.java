@@ -8,16 +8,21 @@ public class SubTask extends Task {
     }
 
     public void setEpic(int epic) {
+        if(this.getId() != null && epic == this.getId()) {
+            System.out.println("Эпик id не может совпадать с id создаваемой подзадачи");
+            this.epic = -1;
+            return;
+        }
         this.epic = epic;
     }
 
     public SubTask(String title, int epic) {
         super(title);
-        this.epic = epic;
+        setEpic(epic);
     }
 
     public SubTask(String title, String description, int epic) {
         super(title, description);
-        this.epic = epic;
+        setEpic(epic);
     }
 }

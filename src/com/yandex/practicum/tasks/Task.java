@@ -3,7 +3,7 @@ package com.yandex.practicum.tasks;
 import java.util.Objects;
 
 public class Task {
-    private int id;
+    private Integer id;
     private String title;
     private String description = "";
     private TaskStatus status = TaskStatus.NEW;
@@ -18,21 +18,19 @@ public class Task {
     }
 
     public Task(String title) {
-        this.id = id;
         this.title = title;
     }
 
     public Task(String title, String description) {
-        this.id = id;
         this.title = title;
         this.description = description;
     }
 
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 

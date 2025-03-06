@@ -2,11 +2,12 @@ package com.yandex.practicum.manager;
 
 import com.yandex.practicum.tasks.*;
 
+
 public class Main {
 
     public static void main(String[] args) {
 
-        InMemoryTaskManager taskManager = new InMemoryTaskManager();
+        TaskManager taskManager = Managers.getDefault();
         Task taskFirst = new Task("сортировка мусора", "сортировать мусор по категориям");
         Task taskSecond = new Task("собрать документы", "найти и собрать документы");
         taskManager.createTask(taskFirst);
@@ -38,26 +39,26 @@ public class Main {
         System.out.println("Подзадачи: " + taskManager.getAllSubTasks());
         System.out.println("Эпики: " + taskManager.getAllEpics());
 
-        for(Epic epicVal : taskManager.epicMap.values()) {
+        for(Epic epicVal : taskManager.getAllEpics()) {
             System.out.println("Эпик: " + epicVal);
             System.out.println("Подзадачи: " + taskManager.getEpicSubTasks(epicVal));
         }
 
         taskFirst.setStatus(TaskStatus.IN_PROGRESS);
         taskManager.updateTask(taskFirst);
-        System.out.println("Статус задачи изменен:" + taskManager.taskMap.get(taskFirst.getId()).getStatus());
+        System.out.println("Статус задачи изменен:" + taskManager.getAllTasks().get(taskFirst.getId()).getStatus());
 
         subtaskFirst.setStatus(TaskStatus.DONE);
         subTaskSecond.setStatus(TaskStatus.DONE);
         System.out.println("Статус эпика до update: " + epic.getStatus());
         taskManager.updateSubTask(subtaskFirst);
         taskManager.updateSubTask(subTaskSecond);
-        System.out.println("Статус подзадачи изменен:" + taskManager.subtaskMap.get(subtaskFirst.getId()).getStatus());
-        System.out.println("Статус подзадачи изменен:" + taskManager.subtaskMap.get(subTaskSecond.getId()).getStatus());
+        System.out.println("Статус подзадачи изменен:" + taskManager.getAllSubTasks().get(subtaskFirst.getId()).getStatus());
+        System.out.println("Статус подзадачи изменен:" + taskManager.getAllSubTasks().get(subTaskSecond.getId()).getStatus());
         System.out.println("Статус эпика после update: " + epic.getStatus());
 
         printAllTasks(taskManager);
-        /*
+
         subtaskToDelete.setStatus(TaskStatus.IN_PROGRESS);
         System.out.println("Статус третьего эпика до update: " + epicThird.getStatus());
         taskManager.updateSubTask(subtaskToDelete);
@@ -78,7 +79,7 @@ public class Main {
         System.out.println("После удаления подзадач: " + epic.getStatus() + " " + epic.getSubTasks());
 
         taskManager.deleteSubTaskById(subtaskToDelete.getId());
-        System.out.println("Подзадачи третьего эпика после удаления 1й задачи: " + taskManager.getEpicSubTasks(epicThird)); */
+        System.out.println("Подзадачи третьего эпика после удаления 1й задачи: " + taskManager.getEpicSubTasks(epicThird));
     }
 
     private static void printAllTasks(TaskManager manager) {
