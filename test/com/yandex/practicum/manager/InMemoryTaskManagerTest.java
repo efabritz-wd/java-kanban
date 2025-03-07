@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -108,12 +109,12 @@ class InMemoryTaskManagerTest {
     void updateEpicCheckSubTasks() {
         taskManager.createSubTask(subTaskFirst);
         taskManager.createSubTask(subTaskSecond);
-        ArrayList<SubTask> subTasksToCreate = epicFirst.getSubTasks();
+        List<SubTask> subTasksToCreate = epicFirst.getSubTasks();
 
         assertNotNull(subTasksToCreate, "Задачей в эпике нет.");
 
         taskManager.updateEpic(epicFirst);
-        ArrayList<SubTask> subTasksCreated = taskManager.getEpicSubTasks(epicFirst);
+        List<SubTask> subTasksCreated = taskManager.getEpicSubTasks(epicFirst);
         assertEquals(2, subTasksCreated.size());
         assertEquals(epicFirst.getSubTasks(), taskManager.getEpicSubTasks(epicFirst));
     }
