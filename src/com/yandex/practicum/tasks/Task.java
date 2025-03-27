@@ -1,8 +1,9 @@
 package com.yandex.practicum.tasks;
 
+import com.yandex.practicum.utils.AccessControl;
 import java.util.Objects;
 
-public class Task {
+public class Task extends AccessControl {
     private Integer id;
     private String title;
     private String description = "";
@@ -31,6 +32,9 @@ public class Task {
     }
 
     public void setId(Integer id) {
+        if(!AccessControl.changesAllowed){
+            return;
+        }
         this.id = id;
     }
 

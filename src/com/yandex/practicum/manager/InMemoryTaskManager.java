@@ -1,10 +1,11 @@
 package com.yandex.practicum.manager;
 
 import com.yandex.practicum.tasks.*;
+import com.yandex.practicum.utils.AccessControl;
 
 import java.util.*;
 
-public class InMemoryTaskManager implements TaskManager {
+public class InMemoryTaskManager extends AccessControl implements TaskManager {
 
     public HistoryManager historyManager = Managers.getDefaultHistory();
     private int idCounter = 0;
@@ -20,9 +21,11 @@ public class InMemoryTaskManager implements TaskManager {
     /* Task */
     @Override
     public void createTask(Task task) {
+        AccessControl.allow();
         task.setId(getNextId());
         taskMap.put(task.getId(), task);
         System.out.println("Задача добавлена!");
+        AccessControl.prohibit();
     }
 
     @Override
@@ -43,6 +46,9 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void deleteAllTasks() {
+        for(Integer id : taskMap.keySet()) {
+            historyManager.remove(id);
+        }
         taskMap.clear();
     }
 
@@ -63,15 +69,18 @@ public class InMemoryTaskManager implements TaskManager {
             System.out.println("Задачи с id: " + id + " не существует!");
             return;
         }
+        historyManager.remove(id);
         taskMap.remove(id);
     }
 
     /* Epic */
     @Override
     public void createEpic(Epic epic) {
+        AccessControl.allow();
         epic.setId(getNextId());
         epicMap.put(epic.getId(), epic);
         System.out.println("Эпик без задач добавлен!");
+        AccessControl.prohibit();
     }
 
     @Override
@@ -125,8 +134,15 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void deleteAllEpicsAndSubTasks() {
+        for(Integer id : subtaskMap.keySet()) {
+            historyManager.remove(id);
+        }
+        for(Integer id : epicMap.keySet()) {
+            historyManager.remove(id);
+        }
         subtaskMap.clear();
         epicMap.clear();
+
     }
 
     @Override
@@ -150,9 +166,11 @@ public class InMemoryTaskManager implements TaskManager {
         Epic epicToDelete = epicMap.get(id);
         List<SubTask> subTasksToDelete = epicToDelete.getSubTasks();
         for(SubTask subtask : subTasksToDelete) {
+            historyManager.remove(subtask.getId());
             subtaskMap.remove(subtask.getId());
         }
         subTasksToDelete.clear();
+        historyManager.remove(id);
         epicMap.remove(id);
     }
 
@@ -179,6 +197,7 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public SubTask createSubTask(SubTask subtask) {
+        AccessControl.allow();
         subtask.setId(getNextId());
         if (subtask.getEpic() == subtask.getId()) {
             System.out.println("Id подзадачи не может быть равен id эпика");
@@ -193,6 +212,7 @@ public class InMemoryTaskManager implements TaskManager {
         subtasks.add(subtask);
         epic.setSubTasks(subtasks);
         checkStatus(epic);
+        AccessControl.prohibit();
         return subtask;
     }
 
@@ -215,6 +235,7 @@ public class InMemoryTaskManager implements TaskManager {
         // при удалении всех подзадач эпика, статус пустого эпика становится NEW
         List<SubTask> subtasks = epic.getSubTasks();
         for(SubTask subtask : subtasks) {
+            historyManager.remove(subtask.getId());
             subtaskMap.remove(subtask.getId());
         }
         epic.getSubTasks().clear();
@@ -226,6 +247,7 @@ public class InMemoryTaskManager implements TaskManager {
         // при удалении всех подзадач эпиков, статус пустых эпикох становится NEW
         Set<Integer> epicIds = new HashSet<>();
         for(SubTask subtask : subtaskMap.values()) {
+            historyManager.remove(subtask.getId());
             epicIds.add(subtask.getEpic());
         }
         for(Integer epicId : epicIds) {
@@ -257,6 +279,7 @@ public class InMemoryTaskManager implements TaskManager {
         int epicId = subtaskMap.get(id).getEpic();
         Epic epic = epicMap.get(epicId);
         epic.getSubTasks().remove(subtaskToDelete);
+        historyManager.remove(id);
         subtaskMap.remove(id);
         checkStatus(epic);
     }

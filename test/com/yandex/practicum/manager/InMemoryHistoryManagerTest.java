@@ -46,6 +46,18 @@ class InMemoryHistoryManagerTest {
         historyManager.addTaskToHistory(taskFirst);
 
         final List<Task> history = historyManager.getHistory();
-        assertEquals(TaskStatus.NEW, history.get(0).getStatus());
+        assertEquals(TaskStatus.DONE, history.getLast().getStatus());
     }
+
+    @Test
+    void removeFromHistory() {
+        taskManager.createTask(taskFirst);
+        if(historyManager.getHistory().isEmpty()) {
+            historyManager.addTaskToHistory(taskFirst);
+        }
+
+        historyManager.remove(taskFirst.getId());
+        assertTrue(historyManager.getHistory().isEmpty(), "История задач не пуста.");
+    }
+
 }

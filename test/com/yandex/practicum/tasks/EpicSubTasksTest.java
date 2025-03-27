@@ -1,4 +1,5 @@
 package com.yandex.practicum.tasks;
+import com.yandex.practicum.utils.AccessControl;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -6,7 +7,7 @@ import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class EpicSubTasksTest {
+class EpicSubTasksTest extends AccessControl {
 
     public static Epic epic;
     public static SubTask subTask;
@@ -14,6 +15,7 @@ class EpicSubTasksTest {
 
     @BeforeAll
     public static void beforeAll() {
+        AccessControl.allow();
         epic = new Epic("Epic title");
         epic.setId(0);
         subTask = new SubTask("First task", "Description 1", epic.getId());

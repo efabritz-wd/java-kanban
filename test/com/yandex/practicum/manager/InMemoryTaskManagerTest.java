@@ -20,12 +20,16 @@ class InMemoryTaskManagerTest {
     public static Task taskSecond;
     public static Epic epicFirst;
     public static Epic epicSecond;
+    public static Epic epicThird;
     public static SubTask subTaskFirst;
     public static SubTask subTaskSecond;
     public static SubTask subTaskThird;
     public static SubTask subTaskFourth;
+    public static SubTask subTaskFifth;
+    public static SubTask subTaskSixth;
     public static TaskManager taskManager;
     public static int epicIdSecond;
+    public static int epicIdThird;
 
     @BeforeAll
     public static void beforeAll() {
@@ -33,9 +37,11 @@ class InMemoryTaskManagerTest {
 
         epicFirst = new Epic("First epic");
         epicSecond = new Epic("Second epic");
+        epicThird = new Epic("Third epic");
 
         taskManager.createEpic(epicFirst);
         taskManager.createEpic(epicSecond);
+        taskManager.createEpic(epicThird);
 
         subTaskFirst = new SubTask("Subtask 1", "Description", epicFirst.getId());
         subTaskSecond = new SubTask("Subtask 2", "Description", epicFirst.getId());
@@ -43,6 +49,10 @@ class InMemoryTaskManagerTest {
         epicIdSecond = epicSecond.getId();
         subTaskThird = new SubTask("Subtask 3", "Description", epicIdSecond);
         subTaskFourth = new SubTask("Subtask 4", "Description", epicIdSecond);
+
+        epicIdThird = epicThird.getId();
+        subTaskFifth = new SubTask("Subtask 5", "Description", epicIdThird);
+        subTaskSixth = new SubTask("Subtask 6", "Description", epicIdThird);
     }
 
     /* Tasks */
@@ -100,9 +110,12 @@ class InMemoryTaskManagerTest {
 
     @Test
     void createEpic() {
+        clearTasks();
+        taskManager.createEpic(new Epic("new epic"));
         assertNotNull(taskManager.getAllEpics(), "Эпики не найдены.");
-        int epicId = epicFirst.getId();
-        assertEquals(epicFirst, taskManager.getEpicById(epicId), "Эпики не одинаковы.");
+        Epic newEpic = taskManager.getAllEpics().get(0);
+        int epicId = taskManager.getAllEpics().get(0).getId();
+        assertEquals(newEpic, taskManager.getEpicById(epicId), "Эпики не одинаковы.");
     }
 
     @Test
@@ -126,6 +139,8 @@ class InMemoryTaskManagerTest {
 
     @Test
     void getEpicById() {
+        clearTasks();
+        taskManager.createEpic(epicSecond);
         final int epicId = epicSecond.getId();
         assertNotNull(taskManager.getEpicById(epicId), "Эпик не с id " + epicId + " найден.");
     }
@@ -139,6 +154,12 @@ class InMemoryTaskManagerTest {
 
     @Test
     void deleteAllEpicsAndSubTasks() {
+        clearTasks();
+        taskManager.createEpic(epicSecond);
+
+        epicIdSecond = epicSecond.getId();
+        subTaskThird = new SubTask("Subtask 3", "Description", epicIdSecond);
+        subTaskFourth = new SubTask("Subtask 4", "Description", epicIdSecond);
 
         taskManager.createSubTask(subTaskThird);
         taskManager.createSubTask(subTaskFourth);
@@ -148,14 +169,31 @@ class InMemoryTaskManagerTest {
 
         epicSecond.setSubTasks(new ArrayList<>(Arrays.asList(subTaskThird, subTaskFourth)));
         taskManager.updateEpic(epicSecond);
-
         assertNotNull(taskManager.getEpicById(epicIdSecond));
 
         taskManager.deleteAllEpicsAndSubTasks();
-
         assertNull(taskManager.getEpicById(epicIdSecond), "Эпик с id " + epicIdSecond + " существует.");
         assertNull(taskManager.getSubTaskById(subtaskIdThird), "Подзадача с id " + subtaskIdThird + " существует.");
         assertNull(taskManager.getEpicById(subtaskIdFourth), "Подзадача с id " + subtaskIdFourth + " существует.");
+    }
+
+    @Test
+    void deleteSubtasksFromEpic() {
+        taskManager.createSubTask(subTaskFifth);
+        taskManager.createSubTask(subTaskSixth);
+
+        final int subtaskIdFifth = subTaskFifth.getId();
+
+        epicThird.setSubTasks(new ArrayList<>(Arrays.asList(subTaskFifth, subTaskSixth)));
+        taskManager.updateEpic(epicThird);
+        assertEquals(2, taskManager.getEpicById(epicIdThird).getSubTasks().size());
+
+        taskManager.deleteSubTaskById(subtaskIdFifth);
+        assertEquals(1, taskManager.getEpicById(epicIdThird).getSubTasks().size());
+
+        for(SubTask subTask : taskManager.getEpicSubTasks(epicThird)) {
+            assertNotEquals(subtaskIdFifth, subTask.getId());
+        }
     }
 
 
@@ -188,33 +226,9 @@ class InMemoryTaskManagerTest {
 
         taskManager.deleteSubTaskById(subTaskId);
         assertNull(taskManager.getSubTaskById(subTaskId), "Подзадача найдена.");
-
     }
 
     /* other tests */
-
-    @Test
-    void createTaskIdConflict() {
-        Task task1;
-        Integer taks1Id;
-        if(!taskManager.getAllTasks().isEmpty()) {
-            task1 = taskManager.getAllTasks().get(0);
-            taks1Id = task1.getId();
-        } else {
-            task1 = new Task("First task 1", "Description 1");
-            task1.setId(0);
-            taks1Id = 0;
-        }
-
-        Task task2 = new Task("First task 2", "Description 2");
-        task2.setId(taks1Id);
-
-        taskManager.createTask(task1);
-        taskManager.createTask(task2);
-
-        assertNotEquals(task1.getId(), task2.getId(), "ID одинаковы.");
-    }
-
     @Test
     void taskConsistency() {
         Task newTask = new Task("First task 2", "Description 2");
@@ -225,6 +239,32 @@ class InMemoryTaskManagerTest {
         assertEquals(newTask.getTitle(), taskManager.getTaskById(newTaskId).getTitle());
         assertEquals(newTask.getDescription(), taskManager.getTaskById(newTaskId).getDescription());
         assertEquals(newTask.getStatus(), taskManager.getTaskById(newTaskId).getStatus());
+    }
+
+    @Test
+    void settersInsecurity() {
+        Task newTask = new Task("Example task", "Description");
+        newTask.setId(100);
+        //удаление всех возможно созданных задач, эпиков и подзадач
+        clearTasks();
+        taskManager.createTask(newTask);
+        taskManager.deleteAllTasks();
+        taskManager.deleteAllEpicsAndSubTasks();
+        taskManager.createTask(newTask);
+        List<Task> taskList = taskManager.getAllTasks();
+        assertNull(taskManager.getTaskById(100));
+        //возможный некорректный функионал
+        if(!taskList.isEmpty()) {
+            Task task = taskList.get(0);
+            task.setId(100);
+            taskManager.updateTask(task);
+            assertNull(taskManager.getTaskById(100));
+        }
+    }
+
+    void clearTasks() {
+        taskManager.deleteAllTasks();
+        taskManager.deleteAllEpicsAndSubTasks();
     }
 
 }
