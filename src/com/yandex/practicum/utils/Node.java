@@ -2,9 +2,17 @@ package com.yandex.practicum.utils;
 
 import java.util.Objects;
 
-public class Node <T> {
+public class Node<T> {
 
     public T task;
+    public Node<T> next;
+    public Node<T> prev;
+
+    public Node(T task) {
+        this.task = task;
+        this.next = null;
+        this.prev = null;
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -16,14 +24,5 @@ public class Node <T> {
     @Override
     public int hashCode() {
         return Objects.hashCode(task);
-    }
-
-    public Node<T> next;
-    public Node<T> prev;
-
-    public Node(T task) {
-        this.task = task;
-        this.next = null;
-        this.prev = null;
     }
 }

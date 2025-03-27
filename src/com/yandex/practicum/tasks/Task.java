@@ -1,6 +1,7 @@
 package com.yandex.practicum.tasks;
 
 import com.yandex.practicum.utils.AccessControl;
+
 import java.util.Objects;
 
 public class Task extends AccessControl {
@@ -9,15 +10,6 @@ public class Task extends AccessControl {
     private String description = "";
     private TaskStatus status = TaskStatus.NEW;
 
-    @Override
-    public String toString() {
-        return "Task{" +
-                "id=" + id +
-                ", title='" + title + '\'' +
-                ", status=" + status +
-                '}';
-    }
-
     public Task(String title) {
         this.title = title;
     }
@@ -25,6 +17,14 @@ public class Task extends AccessControl {
     public Task(String title, String description) {
         this.title = title;
         this.description = description;
+    }
+
+    @Override
+    public String toString() {
+        return "Task{" +
+                "id=" + id +
+                ", title='" + title + "', status=" + status +
+                '}';
     }
 
     public Integer getId() {
