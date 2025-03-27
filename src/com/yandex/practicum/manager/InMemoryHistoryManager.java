@@ -6,7 +6,7 @@ import java.util.*;
 
 import com.yandex.practicum.utils.*;
 
-public class InMemoryHistoryManager implements HistoryManager {
+public class InMemoryHistoryManager extends AccessControl implements HistoryManager {
     //  protected final List<Task> tasksHistory = new ArrayList<>();
     protected final Map<Integer, Node<Task>> tasksHistoryMap = new HashMap<>();
     protected final List<Node<Task>> tasksHistoryList = new LinkedList<>();
@@ -40,7 +40,9 @@ public class InMemoryHistoryManager implements HistoryManager {
     @Override
     public void addTaskToHistory(Task task) {
         Task taskToSave = new Task(task.getTitle(), task.getDescription());
+        AccessControl.allow();
         taskToSave.setId(task.getId());
+        AccessControl.prohibit();
         taskToSave.setStatus(task.getStatus());
         if (tasksHistoryMap.containsKey(task.getId())) {
             removeNode(new Node<>(task));
