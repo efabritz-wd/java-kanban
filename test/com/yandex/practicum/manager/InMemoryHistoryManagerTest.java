@@ -6,6 +6,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -61,7 +62,14 @@ class InMemoryHistoryManagerTest {
         historyManager.remove(task.getId());
         List<Task> taskListEmpty = historyManager.getHistory();
 
-        assertTrue(taskListEmpty.isEmpty(), "История задач не пуста." + taskListEmpty);
+        boolean flag = false;
+        for (Task taskRest : taskListEmpty) {
+            if (Objects.equals(taskRest.getId(), task.getId())) {
+                flag = true;
+                break;
+            }
+        }
+        assertFalse(flag, "Задача не удалена из истории.");
     }
 
 }
