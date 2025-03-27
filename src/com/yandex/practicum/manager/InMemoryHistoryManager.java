@@ -20,13 +20,13 @@ public class InMemoryHistoryManager extends AccessControl implements HistoryMana
         }
     }
 
-    public ArrayList<Task> getTasks() {
+ /*   public ArrayList<Task> getTasks() {
         List<Task> tasksList = new ArrayList<>();
         for (Node<Task> node : tasksHistoryList) {
             tasksList.add(node.task);
         }
         return (ArrayList<Task>) tasksList;
-    }
+    }*/
 
     public void removeNode(Node<Task> node) {
         tasksHistoryList.remove(node);
@@ -34,7 +34,11 @@ public class InMemoryHistoryManager extends AccessControl implements HistoryMana
 
     @Override
     public List<Task> getHistory() {
-        return getTasks();
+        List<Task> tasksList = new ArrayList<>();
+        for (Node<Task> node : tasksHistoryList) {
+            tasksList.add(node.task);
+        }
+        return tasksList;
     }
 
     @Override
