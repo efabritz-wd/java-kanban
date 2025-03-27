@@ -55,14 +55,13 @@ class InMemoryHistoryManagerTest {
         Task task = new Task("task", "description");
         taskManager.createTask(task);
         historyManager.addTaskToHistory(task);
-        
         List<Task> taskList = historyManager.getHistory();
         assertFalse(taskList.isEmpty());
 
         historyManager.remove(task.getId());
         List<Task> taskListEmpty = historyManager.getHistory();
 
-        assertTrue(taskListEmpty.isEmpty(), "История задач не пуста.");
+        assertTrue(taskListEmpty.isEmpty(), "История задач не пуста." + taskListEmpty);
     }
 
 }
