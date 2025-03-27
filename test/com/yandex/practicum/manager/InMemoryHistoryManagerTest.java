@@ -24,7 +24,7 @@ class InMemoryHistoryManagerTest {
 
     @Test
     void addTaskToHistory() {
-        if(taskManager.getAllTasks().isEmpty()) {
+        if (taskManager.getAllTasks().isEmpty()) {
             taskManager.createTask(taskFirst);
         }
         historyManager.addTaskToHistory(taskFirst);
@@ -37,7 +37,7 @@ class InMemoryHistoryManagerTest {
     @Test
     void checkHistory() {
         taskManager.createTask(taskFirst);
-        if(historyManager.getHistory().isEmpty()) {
+        if (historyManager.getHistory().isEmpty()) {
             historyManager.addTaskToHistory(taskFirst);
         }
 
@@ -52,7 +52,7 @@ class InMemoryHistoryManagerTest {
     @Test
     void removeFromHistory() {
         taskManager.createTask(taskFirst);
-        if(historyManager.getHistory().isEmpty()) {
+        if (historyManager.getHistory().isEmpty()) {
             historyManager.addTaskToHistory(taskFirst);
         }
 

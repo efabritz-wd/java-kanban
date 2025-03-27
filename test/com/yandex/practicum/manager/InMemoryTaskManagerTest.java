@@ -78,9 +78,9 @@ class InMemoryTaskManagerTest {
 
     @Test
     void getAllTasks() {
-         taskFirst = new Task("First task", "Description 1");
-         taskManager.createTask(taskFirst);
-         assertFalse(taskManager.getAllTasks().isEmpty());
+        taskFirst = new Task("First task", "Description 1");
+        taskManager.createTask(taskFirst);
+        assertFalse(taskManager.getAllTasks().isEmpty());
     }
 
     @Test
@@ -191,7 +191,7 @@ class InMemoryTaskManagerTest {
         taskManager.deleteSubTaskById(subtaskIdFifth);
         assertEquals(1, taskManager.getEpicById(epicIdThird).getSubTasks().size());
 
-        for(SubTask subTask : taskManager.getEpicSubTasks(epicThird)) {
+        for (SubTask subTask : taskManager.getEpicSubTasks(epicThird)) {
             assertNotEquals(subtaskIdFifth, subTask.getId());
         }
     }
@@ -207,7 +207,7 @@ class InMemoryTaskManagerTest {
 
     @Test
     void updateSubTask() {
-        if(taskManager.getAllSubTasks().isEmpty()) {
+        if (taskManager.getAllSubTasks().isEmpty()) {
             taskManager.createSubTask(subTaskFirst);
         }
         subTaskFirst.setDescription("lala");
@@ -217,7 +217,7 @@ class InMemoryTaskManagerTest {
 
     @Test
     void getAndDeleteSubTaskById() {
-        if(taskManager.getAllSubTasks().isEmpty()) {
+        if (taskManager.getAllSubTasks().isEmpty()) {
             taskManager.createSubTask(subTaskFirst);
         }
         final SubTask subTask = taskManager.getAllSubTasks().get(0);
@@ -254,7 +254,7 @@ class InMemoryTaskManagerTest {
         List<Task> taskList = taskManager.getAllTasks();
         assertNull(taskManager.getTaskById(100));
         //возможный некорректный функионал
-        if(!taskList.isEmpty()) {
+        if (!taskList.isEmpty()) {
             Task task = taskList.get(0);
             task.setId(100);
             taskManager.updateTask(task);
