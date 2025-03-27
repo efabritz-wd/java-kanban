@@ -55,11 +55,9 @@ class InMemoryHistoryManagerTest {
         if (historyManager.getHistory().isEmpty()) {
             historyManager.addTaskToHistory(taskFirst);
         }
-
+        assertEquals(1, historyManager.getHistory().size());
         historyManager.remove(taskFirst.getId());
-        for (Task task : historyManager.getHistory()) {
-            assertFalse(historyManager.getHistory().contains(task), "История задач не пуста.");
-        }
+        assertTrue(historyManager.getHistory().isEmpty(), "История задач не пуста.");
     }
 
 }
