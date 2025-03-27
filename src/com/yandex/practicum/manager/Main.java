@@ -18,8 +18,8 @@ public class Main {
         taskManager.createEpic(epic);
 
         SubTask subtaskFirst = new SubTask("Билеты", "Заказать билеты", epic.getId());
-        SubTask subTaskSecond =  new SubTask("Документы", "Проверить документы", epic.getId());
-        SubTask subTaskSecondFirst =  new SubTask("Документы 2", "Проверить документы", epic.getId());
+        SubTask subTaskSecond = new SubTask("Документы", "Проверить документы", epic.getId());
+        SubTask subTaskSecondFirst = new SubTask("Документы 2", "Проверить документы", epic.getId());
 
         taskManager.createSubTask(subtaskFirst);
         taskManager.createSubTask(subTaskSecond);
@@ -41,7 +41,7 @@ public class Main {
         System.out.println("Подзадачи: " + taskManager.getAllSubTasks());
         System.out.println("Эпики: " + taskManager.getAllEpics());
 
-        for(Epic epicVal : taskManager.getAllEpics()) {
+        for (Epic epicVal : taskManager.getAllEpics()) {
             System.out.println("Эпик: " + epicVal);
             System.out.println("Подзадачи: " + taskManager.getEpicSubTasks(epicVal));
         }
@@ -82,12 +82,12 @@ public class Main {
 
         int idSecond = epicSecond.getId();
         taskManager.deleteEpicById(idSecond);
-        System.out.println("После удаления эпика "  + idSecond + ": " + taskManager.getAllEpics());
+        System.out.println("После удаления эпика " + idSecond + ": " + taskManager.getAllEpics());
         showHistory();
 
         int idThird = epic.getId();
         taskManager.deleteAllEpicSubTasks(epic);
-        System.out.println("После удаления подзадач "+ idThird + ": " + epic.getStatus() + " " + epic.getSubTasks());
+        System.out.println("После удаления подзадач " + idThird + ": " + epic.getStatus() + " " + epic.getSubTasks());
         showHistory();
 
         int idFourth = subtaskToDelete.getId();
@@ -106,7 +106,7 @@ public class Main {
         for (Task epic : manager.getAllEpics()) {
             System.out.println(epic);
 
-            for (Task task : manager.getEpicSubTasks((Epic)epic)) {
+            for (Task task : manager.getEpicSubTasks((Epic) epic)) {
                 System.out.println("--> " + task);
             }
         }
