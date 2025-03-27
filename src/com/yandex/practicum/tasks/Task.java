@@ -32,7 +32,7 @@ public class Task extends AccessControl {
     }
 
     public void setId(Integer id) {
-        if(!AccessControl.changesAllowed){
+        if (!AccessControl.changesAllowed) {
             return;
         }
         this.id = id;
