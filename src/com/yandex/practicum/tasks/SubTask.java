@@ -19,7 +19,6 @@ public class SubTask extends Task {
 
     public void setEpic(int epic) {
         if (this.getId() != null && epic == this.getId()) {
-            System.out.println("Эпик id не может совпадать с id создаваемой подзадачи");
             this.epic = -1;
             return;
         }

@@ -17,7 +17,6 @@ public class Epic extends Task {
     public void setSubTasks(List<SubTask> subTasks) {
         for (SubTask subTask : subTasks) {
             if (subTask.getId() == this.getId()) {
-                System.out.println("Id подзадачи не может быть равен id эпика");
                 return;
             }
         }
