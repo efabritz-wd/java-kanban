@@ -7,36 +7,49 @@ import java.util.*;
 import com.yandex.practicum.utils.*;
 
 public class InMemoryHistoryManager extends AccessControl implements HistoryManager {
-    //  protected final List<Task> tasksHistory = new ArrayList<>();
-    protected final Map<Integer, Node<Task>> tasksHistoryMap = new HashMap<>();
-    protected final List<Node<Task>> tasksHistoryList = new LinkedList<>();
 
-    public void linkLast() {
-        if (tasksHistoryList.size() > 1) {
-            Node<Task> lastNode = tasksHistoryList.get(tasksHistoryList.size() - 2);
-            Node<Task> node = tasksHistoryList.getLast();
-            node.prev = lastNode;
-            lastNode.next = node;
+    protected final Map<Integer, Node<Task>> tasksHistoryMap = new HashMap<>();
+    private Node<Task> head;
+    private Node<Task> tail;
+
+    public void linkLast(Node<Task> node) {
+        if (head == null && tail == null) {
+            head = node;
+        } else if (head != null && tail == null) {
+            head.next = node;
+            tail = node;
+            tail.prev = head;
+        } else if (head != null && tail != null) {
+            tail.next = node;
+            node.prev = tail;
+            tail = node;
         }
     }
 
- /*   public ArrayList<Task> getTasks() {
-        List<Task> tasksList = new ArrayList<>();
-        for (Node<Task> node : tasksHistoryList) {
-            tasksList.add(node.task);
-        }
-        return (ArrayList<Task>) tasksList;
-    }*/
-
     public void removeNode(Node<Task> node) {
-        tasksHistoryList.remove(node);
+
+        if (node.next != null) {
+            node.next.prev = node.prev;
+        } else {
+            tail = node.prev;
+        }
+
+        if (node.prev != null) {
+            node.prev.next = node.next;
+        } else {
+            head = node.next;
+        }
+
+        tasksHistoryMap.remove(node.task.getId());
     }
 
     @Override
     public List<Task> getHistory() {
         List<Task> tasksList = new ArrayList<>();
-        for (Node<Task> node : tasksHistoryList) {
+        Node<Task> node = head;
+        while (node != null) {
             tasksList.add(node.task);
+            node = node.next;
         }
         return tasksList;
     }
@@ -49,12 +62,12 @@ public class InMemoryHistoryManager extends AccessControl implements HistoryMana
         AccessControl.prohibit();
         taskToSave.setStatus(task.getStatus());
         if (tasksHistoryMap.containsKey(task.getId())) {
-            removeNode(new Node<>(task));
+            removeNode(tasksHistoryMap.get(task.getId()));
         }
 
-        tasksHistoryList.add(new Node<>(task));
-        linkLast();
-        tasksHistoryMap.put(task.getId(), new Node<>(task));
+        Node taskNode = new Node(taskToSave);
+        linkLast(taskNode);
+        tasksHistoryMap.put(taskToSave.getId(), taskNode);
     }
 
     @Override
@@ -62,7 +75,7 @@ public class InMemoryHistoryManager extends AccessControl implements HistoryMana
         if (tasksHistoryMap.containsKey(id)) {
             Node<Task> node = tasksHistoryMap.get(id);
             tasksHistoryMap.remove(id);
-            tasksHistoryList.remove(node);
+            removeNode(node);
         }
     }
 }

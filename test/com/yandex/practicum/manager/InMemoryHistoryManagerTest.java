@@ -52,7 +52,6 @@ class InMemoryHistoryManagerTest {
 
     @Test
     void removeFromHistory() {
-        historyManager.getHistory().clear();
         Task task = new Task("task", "description");
         taskManager.createTask(task);
         historyManager.addTaskToHistory(task);
@@ -60,10 +59,10 @@ class InMemoryHistoryManagerTest {
         assertFalse(taskList.isEmpty());
 
         historyManager.remove(task.getId());
-        List<Task> taskListEmpty = historyManager.getHistory();
+        List<Task> taskListAfterRemove = historyManager.getHistory();
 
         boolean flag = false;
-        for (Task taskRest : taskListEmpty) {
+        for (Task taskRest : taskListAfterRemove) {
             if (Objects.equals(taskRest.getId(), task.getId())) {
                 flag = true;
                 break;
