@@ -1,19 +1,17 @@
 package com.yandex.practicum.tasks;
 
-import com.yandex.practicum.utils.AccessControl;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class TaskTest extends AccessControl {
+class TaskTest {
 
     public static Task taskFirst;
     public static Task taskSecond;
 
     @BeforeAll
     public static void beforeAll() {
-        AccessControl.allow();
         taskFirst = new Task("First task", "Description 1");
         taskSecond = new Task("Second task", "Description 2");
     }

@@ -1,11 +1,10 @@
 package com.yandex.practicum.manager;
 
 import com.yandex.practicum.tasks.*;
-import com.yandex.practicum.utils.AccessControl;
 
 import java.util.*;
 
-public class InMemoryTaskManager extends AccessControl implements TaskManager {
+public class InMemoryTaskManager implements TaskManager {
 
     public HistoryManager historyManager = Managers.getDefaultHistory();
     protected Map<Integer, Task> taskMap = new HashMap<>();
@@ -20,10 +19,8 @@ public class InMemoryTaskManager extends AccessControl implements TaskManager {
     /* Task */
     @Override
     public void createTask(Task task) {
-        AccessControl.allow();
         task.setId(getNextId());
         taskMap.put(task.getId(), task);
-        AccessControl.prohibit();
     }
 
     @Override
@@ -71,10 +68,8 @@ public class InMemoryTaskManager extends AccessControl implements TaskManager {
     /* Epic */
     @Override
     public void createEpic(Epic epic) {
-        AccessControl.allow();
         epic.setId(getNextId());
         epicMap.put(epic.getId(), epic);
-        AccessControl.prohibit();
     }
 
     @Override
@@ -186,7 +181,6 @@ public class InMemoryTaskManager extends AccessControl implements TaskManager {
 
     @Override
     public SubTask createSubTask(SubTask subtask) {
-        AccessControl.allow();
         subtask.setId(getNextId());
         if (subtask.getEpic() == subtask.getId()) {
             return null;
@@ -199,7 +193,6 @@ public class InMemoryTaskManager extends AccessControl implements TaskManager {
         subtasks.add(subtask);
         epic.setSubTasks(subtasks);
         checkStatus(epic);
-        AccessControl.prohibit();
         return subtask;
     }
 

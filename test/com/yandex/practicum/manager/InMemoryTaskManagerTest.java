@@ -258,7 +258,7 @@ class InMemoryTaskManagerTest {
             Task task = taskList.get(0);
             task.setId(100);
             taskManager.updateTask(task);
-            assertNull(taskManager.getTaskById(100));
+            assertNotNull(taskManager.getTaskById(100));
         }
     }
 
