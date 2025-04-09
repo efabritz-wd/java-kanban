@@ -1,4 +1,5 @@
 package com.yandex.practicum.tasks;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -27,15 +28,15 @@ class EpicSubTasksTest {
         assertNotNull(epic.getSubTasks());
         assertEquals(subTasks.size(), epic.getSubTasks().size());
 
-        for(int i=0; i < epic.getSubTasks().size(); i++) {
-           SubTask subTaskEpic = epic.getSubTasks().get(i);
-           assertEquals(subTask, subTaskEpic);
+        for (int i = 0; i < epic.getSubTasks().size(); i++) {
+            SubTask subTaskEpic = epic.getSubTasks().get(i);
+            assertEquals(subTask, subTaskEpic);
         }
     }
 
     @Test
     void getEpic() {
-        if(!epic.getSubTasks().isEmpty() && epic.getSubTasks().get(0) != null) {
+        if (!epic.getSubTasks().isEmpty() && epic.getSubTasks().get(0) != null) {
             assertEquals(epic.getId(), epic.getSubTasks().get(0).getEpic());
         }
     }
@@ -44,13 +45,12 @@ class EpicSubTasksTest {
     void addEpicAsSubtaskOfItself() {
         Epic epic = new Epic("epic");
         epic.setId(10);
-        SubTask subTask = new SubTask("New subtask",  "Description", epic.getId());
+        SubTask subTask = new SubTask("New subtask", "Description", epic.getId());
         subTask.setId(10);
         ArrayList<SubTask> subTasks = new ArrayList<>();
         subTasks.add(subTask);
         epic.setSubTasks(subTasks);
         assertTrue(epic.getSubTasks().isEmpty());
-
     }
 
     @Test

@@ -6,6 +6,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -24,7 +25,7 @@ class InMemoryHistoryManagerTest {
 
     @Test
     void addTaskToHistory() {
-        if(taskManager.getAllTasks().isEmpty()) {
+        if (taskManager.getAllTasks().isEmpty()) {
             taskManager.createTask(taskFirst);
         }
         historyManager.addTaskToHistory(taskFirst);
@@ -37,7 +38,7 @@ class InMemoryHistoryManagerTest {
     @Test
     void checkHistory() {
         taskManager.createTask(taskFirst);
-        if(historyManager.getHistory().isEmpty()) {
+        if (historyManager.getHistory().isEmpty()) {
             historyManager.addTaskToHistory(taskFirst);
         }
 
@@ -46,6 +47,28 @@ class InMemoryHistoryManagerTest {
         historyManager.addTaskToHistory(taskFirst);
 
         final List<Task> history = historyManager.getHistory();
-        assertEquals(TaskStatus.NEW, history.get(0).getStatus());
+        assertEquals(TaskStatus.DONE, history.getLast().getStatus());
     }
+
+    @Test
+    void removeFromHistory() {
+        Task task = new Task("task", "description");
+        taskManager.createTask(task);
+        historyManager.addTaskToHistory(task);
+        List<Task> taskList = historyManager.getHistory();
+        assertFalse(taskList.isEmpty());
+
+        historyManager.remove(task.getId());
+        List<Task> taskListAfterRemove = historyManager.getHistory();
+
+        boolean flag = false;
+        for (Task taskRest : taskListAfterRemove) {
+            if (Objects.equals(taskRest.getId(), task.getId())) {
+                flag = true;
+                break;
+            }
+        }
+        assertFalse(flag, "Задача не удалена из истории.");
+    }
+
 }

@@ -18,10 +18,12 @@ public class Main {
         taskManager.createEpic(epic);
 
         SubTask subtaskFirst = new SubTask("Билеты", "Заказать билеты", epic.getId());
-        SubTask subTaskSecond =  new SubTask("Документы", "Проверить документы", epic.getId());
+        SubTask subTaskSecond = new SubTask("Документы", "Проверить документы", epic.getId());
+        SubTask subTaskSecondFirst = new SubTask("Документы 2", "Проверить документы", epic.getId());
 
         taskManager.createSubTask(subtaskFirst);
         taskManager.createSubTask(subTaskSecond);
+        taskManager.createSubTask(subTaskSecondFirst);
 
         Epic epicSecond = new Epic("Кружки");
         taskManager.createEpic(epicSecond);
@@ -39,7 +41,7 @@ public class Main {
         System.out.println("Подзадачи: " + taskManager.getAllSubTasks());
         System.out.println("Эпики: " + taskManager.getAllEpics());
 
-        for(Epic epicVal : taskManager.getAllEpics()) {
+        for (Epic epicVal : taskManager.getAllEpics()) {
             System.out.println("Эпик: " + epicVal);
             System.out.println("Подзадачи: " + taskManager.getEpicSubTasks(epicVal));
         }
@@ -57,6 +59,10 @@ public class Main {
         System.out.println("Статус подзадачи изменен:" + taskManager.getAllSubTasks().get(subTaskSecond.getId()).getStatus());
         System.out.println("Статус эпика после update: " + epic.getStatus());
 
+        taskManager.getAllEpics();
+        taskManager.getEpicById(epicSecond.getId());
+        taskManager.getEpicSubTasks(epic);
+
         printAllTasks(taskManager);
 
         subtaskToDelete.setStatus(TaskStatus.IN_PROGRESS);
@@ -69,17 +75,26 @@ public class Main {
         taskManager.updateSubTask(subtaskToDelete);
         System.out.println("Статус третьего эпика после update 2: " + epicThird.getStatus());
 
-        taskManager.deleteTaskById(taskFirst.getId());
-        System.out.println("После удаления задачи " + taskManager.getAllTasks());
+        int idFirst = taskFirst.getId();
+        taskManager.deleteTaskById(idFirst);
+        System.out.println("После удаления задачи " + idFirst + ": " + taskManager.getAllTasks());
+        showHistory();
 
-        taskManager.deleteEpicById(epicSecond.getId());
-        System.out.println("После удаления эпика: " + taskManager.getAllEpics());
+        int idSecond = epicSecond.getId();
+        taskManager.deleteEpicById(idSecond);
+        System.out.println("После удаления эпика " + idSecond + ": " + taskManager.getAllEpics());
+        showHistory();
 
+        int idThird = epic.getId();
         taskManager.deleteAllEpicSubTasks(epic);
-        System.out.println("После удаления подзадач: " + epic.getStatus() + " " + epic.getSubTasks());
+        System.out.println("После удаления подзадач " + idThird + ": " + epic.getStatus() + " " + epic.getSubTasks());
+        showHistory();
 
-        taskManager.deleteSubTaskById(subtaskToDelete.getId());
-        System.out.println("Подзадачи третьего эпика после удаления 1й задачи: " + taskManager.getEpicSubTasks(epicThird));
+        int idFourth = subtaskToDelete.getId();
+        taskManager.deleteSubTaskById(idFourth);
+        System.out.println("Подзадачи третьего эпика после удаления 1й задачи " + idFourth + ": " + taskManager.getEpicSubTasks(epicThird));
+        showHistory();
+
     }
 
     private static void printAllTasks(TaskManager manager) {
@@ -91,7 +106,7 @@ public class Main {
         for (Task epic : manager.getAllEpics()) {
             System.out.println(epic);
 
-            for (Task task : manager.getEpicSubTasks((Epic)epic)) {
+            for (Task task : manager.getEpicSubTasks((Epic) epic)) {
                 System.out.println("--> " + task);
             }
         }
@@ -100,6 +115,10 @@ public class Main {
             System.out.println(subtask);
         }
 
+        showHistory();
+    }
+
+    public static void showHistory() {
         System.out.println("История:");
         for (Task task : Managers.getDefaultHistory().getHistory()) {
             System.out.println(task);
