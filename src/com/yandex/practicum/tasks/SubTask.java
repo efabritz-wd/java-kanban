@@ -6,11 +6,13 @@ public class SubTask extends Task {
     public SubTask(String title, int epic) {
         super(title);
         setEpic(epic);
+        this.setType(TaskType.SUBTASK);
     }
 
     public SubTask(String title, String description, int epic) {
         super(title, description);
         setEpic(epic);
+        this.setType(TaskType.SUBTASK);
     }
 
     public int getEpic() {
