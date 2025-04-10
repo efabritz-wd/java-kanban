@@ -27,6 +27,17 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
             }
             reader.close();
 
+            // reset manager and file
+            if (!manager.getAllTasks().isEmpty()) {
+                manager.deleteAllTasks();
+            }
+
+            if (!manager.getAllEpics().isEmpty()) {
+                manager.deleteAllEpicsAndSubTasks();
+            }
+
+            resetFile();
+
             for (String taskLine : lines) {
                 String[] lineArray = taskLine.split(",");
                 List<String> linesList = Arrays.asList(lineArray);
@@ -104,6 +115,15 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                 return subTask;
         }
         return null;
+    }
+
+    public static void resetFile() throws IOException {
+        try (Writer fileWriter = new FileWriter(FILE, StandardCharsets.UTF_8, false)) {
+            fileWriter.write("id,type,name,status,description,epic" + "\n");
+            fileWriter.close();
+        } catch (IOException e) {
+            throw new ManagerSaveException("Ошибка при записи в файл", e);
+        }
     }
 
     @Override
@@ -298,15 +318,6 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
             writeToFile(taskLine);
         } catch (IOException e) {
             throw new ManagerSaveException("Ошибка при записи в файл", e); //?
-        }
-    }
-
-    public void resetFile() throws IOException {
-        try (Writer fileWriter = new FileWriter(FILE, StandardCharsets.UTF_8, false)) {
-            fileWriter.write("id,type,name,status,description,epic" + "\n");
-            fileWriter.close();
-        } catch (IOException e) {
-            throw new ManagerSaveException("Ошибка при записи в файл", e);
         }
     }
 

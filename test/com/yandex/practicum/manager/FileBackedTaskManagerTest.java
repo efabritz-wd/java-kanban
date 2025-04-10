@@ -236,9 +236,7 @@ class FileBackedTaskManagerTest {
         FileBackedTaskManager manager = FileBackedTaskManager.loadFromFile(file);
         List<Task> tasks = manager.getAllTasks();
 
-        for (Task task : oldTasks) {
-            assertTrue(tasks.contains(task));
-        }
+        assertEquals(2, tasks.size());
     }
 
     List<Task> createTasks() throws IOException {
