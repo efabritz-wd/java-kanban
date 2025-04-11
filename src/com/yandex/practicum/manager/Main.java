@@ -14,7 +14,8 @@ public class Main {
     }
 
     public static void useCase2() throws IOException {
-        FileBackedTaskManager backupManager = (FileBackedTaskManager) Managers.getDefaultBackup(new File("./data/tasks.csv"));
+        File file = new File("./data/tasks.csv");
+        FileBackedTaskManager backupManager = (FileBackedTaskManager) Managers.getDefaultBackup(file);
         backupManager.resetFile();
 
         Task taskFirst = new Task("сортировка мусора", "сортировать мусор по категориям");

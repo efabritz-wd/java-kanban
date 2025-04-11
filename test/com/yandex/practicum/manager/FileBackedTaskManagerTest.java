@@ -243,6 +243,7 @@ class FileBackedTaskManagerTest {
         File fileLoad = File.createTempFile("test1", ".csv");
         FileBackedTaskManager manager = (FileBackedTaskManager) Managers.getDefaultBackup(fileLoad);
         manager.resetFile();
+
         Task taskFirst = new Task("First task", "Description 1");
         manager.createTask(taskFirst);
 
@@ -254,6 +255,5 @@ class FileBackedTaskManagerTest {
         list.add(taskSecond);
         return list;
     }
-
 
 }

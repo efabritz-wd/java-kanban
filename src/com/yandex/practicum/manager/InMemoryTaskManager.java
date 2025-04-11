@@ -12,6 +12,10 @@ public class InMemoryTaskManager implements TaskManager {
     protected Map<Integer, Epic> epicMap = new HashMap<>();
     private int idCounter = 0;
 
+    public static void setIdCounter(int idCounter) {
+        //this.idCounter = idCounter;
+    }
+
     public int getNextId() {
         return idCounter++;
     }
@@ -19,7 +23,8 @@ public class InMemoryTaskManager implements TaskManager {
     /* Task */
     @Override
     public void createTask(Task task) {
-        task.setId(getNextId());
+        int id = getNextId();
+        task.setId(id);
         taskMap.put(task.getId(), task);
     }
 
@@ -68,7 +73,8 @@ public class InMemoryTaskManager implements TaskManager {
     /* Epic */
     @Override
     public void createEpic(Epic epic) {
-        epic.setId(getNextId());
+        int id = getNextId();
+        epic.setId(id);
         epicMap.put(epic.getId(), epic);
     }
 
@@ -181,7 +187,8 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public SubTask createSubTask(SubTask subtask) {
-        subtask.setId(getNextId());
+        int id = getNextId();
+        subtask.setId(id);
         if (subtask.getEpic() == subtask.getId()) {
             return null;
         }
