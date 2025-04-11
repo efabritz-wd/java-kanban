@@ -10,14 +10,14 @@ public class InMemoryTaskManager implements TaskManager {
     protected Map<Integer, Task> taskMap = new HashMap<>();
     protected Map<Integer, SubTask> subtaskMap = new HashMap<>();
     protected Map<Integer, Epic> epicMap = new HashMap<>();
-    private int idCounter = 0;
+    private int idCounter = -1;
 
-    public static void setIdCounter(int idCounter) {
-        //this.idCounter = idCounter;
+    public void setIdCounter(int idCounter) {
+        this.idCounter = idCounter;
     }
 
     public int getNextId() {
-        return idCounter++;
+        return ++idCounter;
     }
 
     /* Task */

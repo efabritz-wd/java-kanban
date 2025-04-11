@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -235,8 +236,19 @@ class FileBackedTaskManagerTest {
 
         FileBackedTaskManager manager = FileBackedTaskManager.loadFromFile(file);
         List<Task> tasks = manager.getAllTasks();
-
         assertEquals(2, tasks.size());
+
+        int maxId = 0;
+        for (Task task : oldTasks) {
+            if (task.getId() > maxId) {
+                maxId = task.getId();
+            }
+            assertTrue(tasks.contains(task));
+        }
+
+        Epic epic = new Epic("epic1", "epic1 description");
+        manager.createEpic(epic);
+        assertEquals(++maxId, epic.getId());
     }
 
     List<Task> createTasks() throws IOException {
@@ -253,6 +265,38 @@ class FileBackedTaskManagerTest {
         List<Task> list = new ArrayList<>();
         list.add(taskFirst);
         list.add(taskSecond);
+        return list;
+    }
+
+    @Test
+    void loadFromFileEpic() throws IOException {
+        createEpicWithSubtasks();
+
+        FileBackedTaskManager manager = FileBackedTaskManager.loadFromFile(file);
+        List<Epic> epics = manager.getAllEpics();
+        List<SubTask> subTasks = manager.getEpicSubTasks(epics.get(0));
+        assertEquals(2, subTasks.size());
+        assertEquals(epics.get(0).getSubTasks(), subTasks);
+    }
+
+    List<Task> createEpicWithSubtasks() throws IOException {
+        File fileLoad = File.createTempFile("test1", ".csv");
+        FileBackedTaskManager manager = (FileBackedTaskManager) Managers.getDefaultBackup(fileLoad);
+        manager.resetFile();
+
+        Epic epic = new Epic("First epic", "Description 1");
+        manager.createTask(epic);
+
+        SubTask subTaskFirst = new SubTask("subtask1", "Description 2", epic.getId());
+        manager.createTask(subTaskFirst);
+
+        SubTask subTaskSecond = new SubTask("subtask2", "Description 2", epic.getId());
+        manager.createTask(subTaskSecond);
+
+        List<Task> list = new ArrayList<>();
+        list.add(epic);
+        list.add(subTaskFirst);
+        list.add(subTaskSecond);
         return list;
     }
 

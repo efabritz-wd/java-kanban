@@ -41,20 +41,36 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                 throw new ManagerSaveException("Ошибка при записи в файл", e);
             }
 
+            List<Integer> idsList = new ArrayList<>();
+
             for (String taskLine : lines) {
                 String[] lineArray = taskLine.split(",");
                 List<String> linesList = Arrays.asList(lineArray);
                 if (linesList.contains("TASK")) {
                     Task task = fromString(taskLine);
+                    idsList.add(Integer.valueOf(task.getId()));
                     ((FileBackedTaskManager) manager).taskMap.put(task.getId(), task);
                 } else if (linesList.contains("EPIC")) {
                     Epic epic = (Epic) fromString(taskLine);
-                    ((FileBackedTaskManager) manager).taskMap.put(epic.getId(), epic);
+                    idsList.add(Integer.valueOf(epic.getId()));
+                    ((FileBackedTaskManager) manager).epicMap.put(epic.getId(), epic);
                 } else if (linesList.contains("SUBTASK")) {
                     SubTask subTask = (SubTask) fromString(taskLine);
-                    ((FileBackedTaskManager) manager).taskMap.put(subTask.getId(), subTask);
+                    idsList.add(Integer.valueOf(subTask.getId()));
+                    ((FileBackedTaskManager) manager).subtaskMap.put(subTask.getId(), subTask);
                 }
             }
+
+            for (SubTask subTask : ((FileBackedTaskManager) manager).subtaskMap.values()) {
+                int epicId = subTask.getEpic();
+                Epic epic = ((FileBackedTaskManager) manager).epicMap.get(epicId);
+                List<SubTask> subTasksList = epic.getSubTasks();
+                subTasksList.add(subTask);
+                epic.setSubTasks(subTasksList);
+            }
+
+            int maxId = Collections.max(idsList);
+            manager.setIdCounter(maxId);
 
             return (FileBackedTaskManager) manager;
         } catch (IOException e) {
