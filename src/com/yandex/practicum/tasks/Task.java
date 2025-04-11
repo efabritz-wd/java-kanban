@@ -7,6 +7,7 @@ public class Task {
     private String title;
     private String description = "";
     private TaskStatus status = TaskStatus.NEW;
+    private TaskType type = TaskType.TASK;
 
     public Task(String title) {
         this.title = title;
@@ -15,6 +16,14 @@ public class Task {
     public Task(String title, String description) {
         this.title = title;
         this.description = description;
+    }
+
+    public TaskType getType() {
+        return type;
+    }
+
+    public void setType(TaskType type) {
+        this.type = type;
     }
 
     @Override

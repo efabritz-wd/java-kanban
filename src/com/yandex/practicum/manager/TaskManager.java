@@ -51,4 +51,6 @@ public interface TaskManager {
     SubTask getSubTaskById(int id);
 
     void deleteSubTaskById(int id);
+
+    void setIdCounter(int maxId);
 }

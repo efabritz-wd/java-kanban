@@ -19,6 +19,9 @@ class ManagersTest {
         taskmanagerFirst.createTask(new Task("title", "description"));
         assertNotNull(taskmanagerFirst.getAllTasks(), "Задача не создана");
         assertEquals(1, taskmanagerFirst.getAllTasks().size());
+
+        taskmanagerFirst.deleteAllTasks();
+        taskmanagerSecond.deleteAllTasks();
     }
 
     @Test

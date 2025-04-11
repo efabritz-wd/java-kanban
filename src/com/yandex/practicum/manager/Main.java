@@ -2,11 +2,47 @@ package com.yandex.practicum.manager;
 
 import com.yandex.practicum.tasks.*;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+
 
 public class Main {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
+        useCase2();
+    }
 
+    public static void useCase2() throws IOException {
+        File file = new File("./data/tasks.csv");
+        FileBackedTaskManager backupManager = (FileBackedTaskManager) Managers.getDefaultBackup(file);
+        backupManager.resetFile();
+
+        Task taskFirst = new Task("сортировка мусора", "сортировать мусор по категориям");
+        Task taskSecond = new Task("собрать документы", "найти и собрать документы");
+        backupManager.createTask(taskFirst);
+        backupManager.createTask(taskSecond);
+
+        Epic epic = new Epic("Поездка домой", "Описание");
+        backupManager.createEpic(epic);
+
+        SubTask subtaskFirst = new SubTask("Билеты", "Заказать билеты", epic.getId());
+        SubTask subTaskSecond = new SubTask("Документы", "Проверить документы", epic.getId());
+        backupManager.createSubTask(subtaskFirst);
+        backupManager.createSubTask(subTaskSecond);
+
+        FileBackedTaskManager backupManagerSecond = (FileBackedTaskManager) Managers.getDefaultBackup(new File("./data/tasks.csv"));
+        List<String> lines = backupManagerSecond.readFromFile();
+        for (String line : lines) {
+            if (line.charAt(0) == 'i' && line.charAt(1) == 'd') {
+                continue;
+            }
+            Task task = FileBackedTaskManager.fromString(line);
+            System.out.println(task);
+        }
+    }
+
+    public static void useCase1() {
         TaskManager taskManager = Managers.getDefault();
         Task taskFirst = new Task("сортировка мусора", "сортировать мусор по категориям");
         Task taskSecond = new Task("собрать документы", "найти и собрать документы");
@@ -94,7 +130,6 @@ public class Main {
         taskManager.deleteSubTaskById(idFourth);
         System.out.println("Подзадачи третьего эпика после удаления 1й задачи " + idFourth + ": " + taskManager.getEpicSubTasks(epicThird));
         showHistory();
-
     }
 
     private static void printAllTasks(TaskManager manager) {
