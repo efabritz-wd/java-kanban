@@ -5,7 +5,11 @@ import com.yandex.practicum.utils.ManagerSaveException;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.*;
+
+import static com.yandex.practicum.tasks.Task.formatter;
 
 public class FileBackedTaskManager extends InMemoryTaskManager {
 
@@ -36,7 +40,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
             }
 
             try (Writer fileWriter = new FileWriter(file, StandardCharsets.UTF_8, false)) {
-                fileWriter.write("id,type,name,status,description,epic" + "\n");
+                fileWriter.write("id,type,name,status,description,start,duration,stop,epic" + "\n");
             } catch (IOException e) {
                 throw new ManagerSaveException("Ошибка при записи в файл", e);
             }
@@ -90,7 +94,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         for (int i = 0; i < linesArray.length; i++) {
             linesArray[i] = linesArray[i].trim();
         }
-        if (linesArray.length < 5) {
+        if (linesArray.length < 8) {
             return null;
         }
         if (linesArray[1] == null) {
@@ -118,19 +122,34 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                 Task task = new Task(linesArray[2], linesArray[4]);
                 task.setId(Integer.valueOf(linesArray[0]));
                 task.setStatus(taskStatus);
+                Duration duration = Duration.ofMinutes(Long.parseLong(linesArray[6]));
+                task.setStartTime(LocalDateTime.parse(linesArray[5], formatter));
+                task.setDuration(duration);
+                task.getEndTime();
+                //    task.setEndTime(LocalDateTime.parse(linesArray[7], formatter));
                 return task;
             case TaskType.EPIC:
                 Epic epic = new Epic(linesArray[2], linesArray[4]);
                 epic.setId(Integer.valueOf(linesArray[0]));
                 epic.setStatus(taskStatus);
+                duration = Duration.ofMinutes(Long.parseLong(linesArray[6]));
+                epic.setStartTime(LocalDateTime.parse(linesArray[5], formatter));
+                epic.setDuration(duration);
+                epic.getEndTime();
+                //  epic.setEndTime(LocalDateTime.parse(linesArray[7], formatter));
                 return epic;
             case TaskType.SUBTASK:
                 if (linesArray[5] == null) {
                     return null;
                 }
-                SubTask subTask = new SubTask(linesArray[2], linesArray[4], Integer.valueOf(linesArray[5]));
+                SubTask subTask = new SubTask(linesArray[2], linesArray[4], Integer.valueOf(linesArray[8]));
                 subTask.setId(Integer.valueOf(linesArray[0]));
                 subTask.setStatus(taskStatus);
+                duration = Duration.ofMinutes(Long.parseLong(linesArray[6]));
+                subTask.setStartTime(LocalDateTime.parse(linesArray[5], formatter));
+                subTask.setDuration(duration);
+                subTask.getEndTime();
+                //   subTask.setEndTime(LocalDateTime.parse(linesArray[7], formatter));
                 return subTask;
         }
         return null;
@@ -138,7 +157,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
     public void resetFile() throws IOException {
         try (Writer fileWriter = new FileWriter(this.file, StandardCharsets.UTF_8, false)) {
-            fileWriter.write("id,type,name,status,description,epic" + "\n");
+            fileWriter.write("id,type,name,status,description,start,duration,stop,epic" + "\n");
         } catch (IOException e) {
             throw new ManagerSaveException("Ошибка при записи в файл", e);
         }
@@ -147,49 +166,64 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     @Override
     public void createTask(Task task) {
         super.createTask(task);
-        createTaskInFile(task);
+        if (task.getId() != null) {
+            createTaskInFile(task);
+        }
     }
 
     @Override
     public SubTask createSubTask(SubTask subtask) {
         SubTask subTask = super.createSubTask(subtask);
-        createTaskInFile(subTask);
-        return subTask;
+        if (subTask.getId() != null) {
+            createTaskInFile(subTask);
+            updateEpic(this.epicMap.get(subTask.getEpic()));
+            return subTask;
+        } else {
+            return null;
+        }
     }
 
     @Override
     public void createEpic(Epic epic) {
         super.createEpic(epic);
-        createTaskInFile(epic);
+        if (epic.getId() != null) {
+            createTaskInFile(epic);
+        }
     }
 
     @Override
     public void updateTask(Task task) {
         super.updateTask(task);
-        try {
-            updateTasksInFile(task);
-        } catch (IOException e) {
-            throw new ManagerSaveException("Ошибка при обновлении файла", e);
+        if (task.getId() != null) {
+            try {
+                updateTasksInFile(task);
+            } catch (IOException e) {
+                throw new ManagerSaveException("Ошибка при обновлении файла", e);
+            }
         }
     }
 
     @Override
     public void updateSubTask(SubTask subtask) {
         super.updateSubTask(subtask);
-        try {
-            updateTasksInFile(subtask);
-        } catch (IOException e) {
-            throw new ManagerSaveException("Ошибка при обновлении файла", e);
+        if (subtask.getId() != null) {
+            try {
+                updateTasksInFile(subtask);
+            } catch (IOException e) {
+                throw new ManagerSaveException("Ошибка при обновлении файла", e);
+            }
         }
     }
 
     @Override
     public void updateEpic(Epic epic) {
         super.updateEpic(epic);
-        try {
-            updateTasksInFile(epic);
-        } catch (IOException e) {
-            throw new ManagerSaveException("Ошибка при обновлении файла", e);
+        if (epic.getId() != null) {
+            try {
+                updateTasksInFile(epic);
+            } catch (IOException e) {
+                throw new ManagerSaveException("Ошибка при обновлении файла", e);
+            }
         }
     }
 
@@ -314,17 +348,22 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
     public String toString(Task task) {
         String line = "";
+        long durationMinutes = task.getDuration().toMinutes();
+
+        String formattedStartDateTime = task.getStartTime().format(formatter);
+        String formattedEndDateTime = task.getEndTime().format(formatter);
+
         switch (task.getType()) {
             case TaskType.TASK:
-                line = task.getId() + "," + TaskType.TASK + "," + task.getTitle() + "," + task.getStatus() + "," + task.getDescription();
+                line = task.getId() + "," + TaskType.TASK + "," + task.getTitle() + "," + task.getStatus() + "," + task.getDescription() + "," + formattedStartDateTime + "," + durationMinutes + "," + formattedEndDateTime;
                 break;
             case TaskType.EPIC:
-                line = task.getId() + "," + TaskType.EPIC + "," + task.getTitle() + "," + task.getStatus() + "," + task.getDescription();
+                line = task.getId() + "," + TaskType.EPIC + "," + task.getTitle() + "," + task.getStatus() + "," + task.getDescription() + "," + formattedStartDateTime + "," + durationMinutes + "," + formattedEndDateTime;
                 break;
             case TaskType.SUBTASK:
                 SubTask subTask = (SubTask) task;
                 int epicId = subTask.getEpic();
-                line = task.getId() + "," + TaskType.SUBTASK + "," + task.getTitle() + "," + task.getStatus() + "," + task.getDescription() + "," + epicId;
+                line = task.getId() + "," + TaskType.SUBTASK + "," + task.getTitle() + "," + task.getStatus() + "," + task.getDescription() + "," + formattedStartDateTime + "," + durationMinutes + "," + formattedEndDateTime + "," + epicId;
                 break;
         }
         return line;

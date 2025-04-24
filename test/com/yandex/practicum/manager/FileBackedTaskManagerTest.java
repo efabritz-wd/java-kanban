@@ -9,6 +9,8 @@ import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -35,6 +37,13 @@ class FileBackedTaskManagerTest {
     @Test
     void createTask() throws IOException {
         Task taskFirst = new Task("First task", "Description 1");
+
+        taskFirst.setStartTime(LocalDateTime.now());
+        taskFirst.setDuration(Duration.ofMinutes(20));
+        LocalDateTime endTime = taskFirst.getEndTime();
+        LocalDateTime chekStartTime = endTime.minus(taskFirst.getDuration());
+        assertTrue(chekStartTime.equals(taskFirst.getStartTime()));
+
         backupManager.createTask(taskFirst);
         String line = backupManager.toString(taskFirst);
         List<String> linesFound = backupManager.readFromFile();
@@ -52,9 +61,21 @@ class FileBackedTaskManagerTest {
 
         SubTask subTaskFirst = new SubTask("Subtask 1", "Description", epicFirst.getId());
         SubTask subTaskSecond = new SubTask("Subtask 2", "Description", epicFirst.getId());
+        subTaskFirst.setStartTime(LocalDateTime.now());
+        subTaskFirst.setDuration(Duration.ofMinutes(20));
+        subTaskFirst.getEndTime();
+
+        subTaskSecond.setStartTime(LocalDateTime.now().plusMinutes(30));
+        subTaskSecond.setDuration(Duration.ofMinutes(10));
+        subTaskSecond.getEndTime();
 
         backupManager.createSubTask(subTaskFirst);
         backupManager.createSubTask(subTaskSecond);
+
+        assertEquals(epicFirst.getStartTime(), subTaskFirst.getStartTime(), "Время начало эпика неверно");
+        assertEquals(epicFirst.getEndTime(), subTaskSecond.getEndTime(), "Время конца эпика неверно");
+        assertEquals(epicFirst.getDuration(), subTaskFirst.getDuration().plus(subTaskSecond.getDuration()),
+                "Продолжительность эпика не совпадает с продолжительностью подзадач");
 
         List<String> linesFound = backupManager.readFromFile();
         assertTrue(linesFound.contains(backupManager.toString(epicFirst)));
