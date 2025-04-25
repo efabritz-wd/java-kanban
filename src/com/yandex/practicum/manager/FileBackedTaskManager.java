@@ -8,12 +8,13 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.yandex.practicum.tasks.Task.formatter;
 
 public class FileBackedTaskManager extends InMemoryTaskManager {
 
-    private File file;
+    public final File file;
 
     public FileBackedTaskManager(File fileName) {
         super();
@@ -73,8 +74,10 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                 epic.setSubTasks(subTasksList);
             }
 
-            int maxId = Collections.max(idsList);
-            manager.setIdCounter(maxId);
+            if (!idsList.isEmpty()) {
+                int maxId = Collections.max(idsList);
+                manager.setIdCounter(maxId);
+            }
 
             return (FileBackedTaskManager) manager;
         } catch (IOException e) {
@@ -91,9 +94,10 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
     public static Task fromString(String value) {
         String[] linesArray = value.split(",");
-        for (int i = 0; i < linesArray.length; i++) {
-            linesArray[i] = linesArray[i].trim();
-        }
+        linesArray = Arrays.stream(linesArray)
+                .map(String::trim)
+                .toArray(String[]::new);
+
         if (linesArray.length < 8) {
             return null;
         }
@@ -126,7 +130,6 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                 task.setStartTime(LocalDateTime.parse(linesArray[5], formatter));
                 task.setDuration(duration);
                 task.getEndTime();
-                //    task.setEndTime(LocalDateTime.parse(linesArray[7], formatter));
                 return task;
             case TaskType.EPIC:
                 Epic epic = new Epic(linesArray[2], linesArray[4]);
@@ -136,7 +139,6 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                 epic.setStartTime(LocalDateTime.parse(linesArray[5], formatter));
                 epic.setDuration(duration);
                 epic.getEndTime();
-                //  epic.setEndTime(LocalDateTime.parse(linesArray[7], formatter));
                 return epic;
             case TaskType.SUBTASK:
                 if (linesArray[5] == null) {
@@ -149,7 +151,6 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                 subTask.setStartTime(LocalDateTime.parse(linesArray[5], formatter));
                 subTask.setDuration(duration);
                 subTask.getEndTime();
-                //   subTask.setEndTime(LocalDateTime.parse(linesArray[7], formatter));
                 return subTask;
         }
         return null;
@@ -243,16 +244,13 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
             throw new ManagerSaveException("Ошибка при чтении файла", e);
         }
         HashMap<Integer, Task> linesMap = linesToHash(lines);
-        List<Integer> keysToRemove = new ArrayList<>();
-        for (Task task : linesMap.values()) {
-            if (task.getType().equals(TaskType.TASK)) {
-                keysToRemove.add(task.getId());
-            }
-        }
+        List<Integer> keysToRemove = linesMap.values().stream()
+                .filter(task -> task.getType().equals(TaskType.TASK))
+                .map(Task::getId)
+                .collect(Collectors.toList());
 
-        for (Integer key : keysToRemove) {
-            linesMap.remove(key);
-        }
+        keysToRemove.stream()
+                .forEach(linesMap::remove);
 
         updateFile(linesMap);
     }
@@ -267,16 +265,13 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
             throw new ManagerSaveException("Ошибка при чтении файла", e);
         }
         HashMap<Integer, Task> linesMap = linesToHash(lines);
-        List<Integer> keysToRemove = new ArrayList<>();
-        for (Task task : linesMap.values()) {
-            if (task.getType().equals(TaskType.EPIC) || task.getType().equals(TaskType.SUBTASK)) {
-                keysToRemove.add(task.getId());
-            }
-        }
+        List<Integer> keysToRemove = linesMap.values().stream()
+                .filter(task -> task.getType().equals(TaskType.EPIC) || task.getType().equals(TaskType.SUBTASK))
+                .map(Task::getId)
+                .collect(Collectors.toList());
 
-        for (Integer key : keysToRemove) {
-            linesMap.remove(key);
-        }
+        keysToRemove.stream()
+                .forEach(linesMap::remove);
 
         updateFile(linesMap);
     }
@@ -307,9 +302,8 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                 }
             }
         }
-        for (Integer key : keysToRemove) {
-            linesMap.remove(key);
-        }
+        keysToRemove.stream()
+                .forEach(linesMap::remove);
 
         updateFile(linesMap);
     }
@@ -325,17 +319,13 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
             throw new ManagerSaveException("Ошибка", e);
         }
         HashMap<Integer, Task> linesMap = linesToHash(lines);
-        List<Integer> keysToRemove = new ArrayList<>();
-        for (Task task : linesMap.values()) {
-            if (task.getType().equals(TaskType.SUBTASK)) {
-                keysToRemove.add(task.getId());
-            }
-        }
+        List<Integer> keysToRemove = linesMap.values().stream()
+                .filter(task -> task.getType().equals(TaskType.SUBTASK))
+                .map(Task::getId)
+                .collect(Collectors.toList());
 
-        for (Integer key : keysToRemove) {
-            linesMap.remove(key);
-        }
-
+        keysToRemove.stream()
+                .forEach(linesMap::remove);
 
         updateFile(linesMap);
     }
@@ -416,20 +406,25 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     }
 
     public void fillFile(List<Task> tasks) throws IOException {
-        for (Task task : tasks) {
-            String line = toString(task);
-            writeToFile(line);
-        }
+        tasks.stream()
+                .map(this::toString)
+                .forEach(line -> {
+                    try {
+                        writeToFile(line);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
     }
 
     public void updateTasksInFile(Task task) throws IOException {
         List<String> taskLines = readFromFile();
         HashMap<Integer, Task> hashMap = linesToHash(taskLines);
-        for (Integer key : hashMap.keySet()) {
-            if (Objects.equals(key, task.getId())) {
-                hashMap.put(key, task);
-            }
-        }
+
+        hashMap.keySet().stream()
+                .filter(key -> Objects.equals(key, task.getId()))
+                .forEach(key -> hashMap.put(key, task));
+
         resetFile();
         List<Task> taskList = new ArrayList<>(hashMap.values());
         fillFile(taskList);
@@ -454,9 +449,8 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                 }
             }
         }
-        for (Integer key : keyToRemove) {
-            linesMap.remove(key);
-        }
+        keyToRemove.stream()
+                .forEach(linesMap::remove);
         linesMap.remove(id);
         updateFile(linesMap);
     }

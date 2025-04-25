@@ -30,9 +30,6 @@ public class Main {
 
 
         backupManager.createTask(taskFirst);
-        // boolean cross = backupManager.checkTaskTimeCrossing(taskSecond);
-        // System.out.println("Cross: " + cross);
-
         backupManager.createTask(taskSecond);
 
         Epic epic = new Epic("Поездка домой", "Описание");

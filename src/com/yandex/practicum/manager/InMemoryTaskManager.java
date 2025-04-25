@@ -1,10 +1,10 @@
 package com.yandex.practicum.manager;
 
 import com.yandex.practicum.tasks.*;
+import com.yandex.practicum.utils.TaskPriorityComparator;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class InMemoryTaskManager implements TaskManager {
 
@@ -75,10 +75,6 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public List<Task> getAllTasks() {
-        /*  for (Task task : taskMap.values()) {
-            tasks.add(task);
-            historyManager.addTaskToHistory(task);
-        }*/
         return taskMap.values().stream()
                 .peek(historyManager::addTaskToHistory)
                 .collect(Collectors.toList());
@@ -86,14 +82,9 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void deleteAllTasks() {
-        for (Integer id : taskMap.keySet()) {
-            historyManager.remove(id);
-        }
-        for (Task task : taskMap.values()) {
-            if (priorizedTasks.contains(task)) {
-                priorizedTasks.remove(task);
-            }
-        }
+        taskMap.keySet().stream().peek(historyManager::remove);
+        priorizedTasks.removeIf(task -> taskMap.values().contains(task));
+
         taskMap.clear();
     }
 
@@ -176,13 +167,10 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public ArrayList<Epic> getAllEpics() {
-        ArrayList<Epic> epics = new ArrayList<>();
-        for (Epic epic : epicMap.values()) {
-            epics.add(epic);
-            historyManager.addTaskToHistory(epic);
-        }
-        return epics;
+    public List<Epic> getAllEpics() {
+        return epicMap.values().stream()
+                .peek(historyManager::addTaskToHistory)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -193,6 +181,7 @@ public class InMemoryTaskManager implements TaskManager {
                 priorizedTasks.remove(subtaskMap.get(id));
             }
         }
+
         for (Integer id : epicMap.keySet()) {
             historyManager.remove(id);
             if (priorizedTasks.contains(epicMap.get(id))) {
@@ -238,9 +227,7 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public List<SubTask> getEpicSubTasks(Epic epic) {
-        for (SubTask subTask : epic.getSubTasks()) {
-            historyManager.addTaskToHistory(subTask);
-        }
+        epic.getSubTasks().stream().peek(historyManager::addTaskToHistory);
 
         return epic.getSubTasks();
     }
@@ -284,12 +271,10 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public ArrayList<SubTask> getAllSubTasks() {
-        ArrayList<SubTask> subtasks = new ArrayList<>();
-        for (SubTask subtask : subtaskMap.values()) {
-            subtasks.add(subtask);
-            historyManager.addTaskToHistory(subtask);
-        }
+    public List<SubTask> getAllSubTasks() {
+        List<SubTask> subtasks = subtaskMap.values().stream()
+                .peek(historyManager::addTaskToHistory)
+                .collect(Collectors.toList());
         return subtasks;
     }
 
@@ -322,9 +307,8 @@ public class InMemoryTaskManager implements TaskManager {
             }
             epicIds.add(subtask.getEpic());
         }
-        for (Integer epicId : epicIds) {
-            epicMap.get(epicId).setStatus(TaskStatus.NEW);
-        }
+
+        epicIds.stream().map(epicMap::get).peek(epic -> epic.setStatus(TaskStatus.NEW));
         subtaskMap.clear();
     }
 
@@ -356,11 +340,9 @@ public class InMemoryTaskManager implements TaskManager {
         }
         checkStatus(epic);
     }
-}
 
-class TaskPriorityComparator implements Comparator<Task> {
     @Override
-    public int compare(Task task, Task otherTask) {
-        return task.getStartTime().compareTo(otherTask.getStartTime());
+    public void deleteAllPriorizedTasks() {
+        this.priorizedTasks.clear();
     }
 }

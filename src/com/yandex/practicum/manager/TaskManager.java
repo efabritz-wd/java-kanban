@@ -53,4 +53,6 @@ public interface TaskManager {
     void deleteSubTaskById(int id);
 
     void setIdCounter(int maxId);
+
+    void deleteAllPriorizedTasks();
 }

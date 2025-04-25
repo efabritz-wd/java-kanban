@@ -16,16 +16,12 @@ public class Managers {
     }
 
     public static HistoryManager getDefaultHistory() {
-        if (historyManager == null) {
-            historyManager = new InMemoryHistoryManager();
-        }
+        historyManager = new InMemoryHistoryManager();
         return historyManager;
     }
 
     public static TaskManager getDefaultBackup(File file) {
-        if (backedManager == null) {
-            backedManager = new FileBackedTaskManager(file);
-        }
+        backedManager = new FileBackedTaskManager(file);
         return backedManager;
     }
 }

@@ -6,7 +6,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
-import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -52,23 +51,34 @@ class InMemoryHistoryManagerTest {
 
     @Test
     void removeFromHistory() {
-        Task task = new Task("task", "description");
-        taskManager.createTask(task);
-        historyManager.addTaskToHistory(task);
-        List<Task> taskList = historyManager.getHistory();
-        assertFalse(taskList.isEmpty());
+        historyManager.clearHistory();
+        Task task1 = new Task("task1", "description");
+        Task task2 = new Task("task2", "description");
+        Task task3 = new Task("task3", "description");
 
-        historyManager.remove(task.getId());
-        List<Task> taskListAfterRemove = historyManager.getHistory();
+        taskManager.createTask(task1);
+        taskManager.createTask(task2);
+        taskManager.createTask(task3);
 
-        boolean flag = false;
-        for (Task taskRest : taskListAfterRemove) {
-            if (Objects.equals(taskRest.getId(), task.getId())) {
-                flag = true;
-                break;
-            }
-        }
-        assertFalse(flag, "Задача не удалена из истории.");
+        historyManager.addTaskToHistory(task1);
+        historyManager.addTaskToHistory(task1);
+
+        historyManager.addTaskToHistory(task2);
+        historyManager.addTaskToHistory(task3);
+
+        assertEquals(3, historyManager.getHistory().size());
+
+        historyManager.remove(task2.getId());
+        assertEquals(2, historyManager.getHistory().size());
+        assertFalse(historyManager.getHistory().contains(task2));
+
+        historyManager.remove(task1.getId());
+        assertEquals(1, historyManager.getHistory().size());
+        assertFalse(historyManager.getHistory().contains(task1));
+
+        historyManager.remove(task3.getId());
+        assertEquals(0, historyManager.getHistory().size());
+        assertFalse(historyManager.getHistory().contains(task3));
     }
 
 }
