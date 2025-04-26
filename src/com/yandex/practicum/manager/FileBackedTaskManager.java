@@ -76,7 +76,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
             if (!idsList.isEmpty()) {
                 int maxId = Collections.max(idsList);
-                manager.setIdCounter(maxId);
+                ((FileBackedTaskManager) manager).setIdCounter(maxId);
             }
 
             return (FileBackedTaskManager) manager;

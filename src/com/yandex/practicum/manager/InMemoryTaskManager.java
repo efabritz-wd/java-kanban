@@ -3,16 +3,18 @@ package com.yandex.practicum.manager;
 import com.yandex.practicum.tasks.*;
 import com.yandex.practicum.utils.TaskPriorityComparator;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class InMemoryTaskManager implements TaskManager {
 
-    public HistoryManager historyManager = Managers.getDefaultHistory();
-    protected Map<Integer, Task> taskMap = new HashMap<>();
-    protected Map<Integer, SubTask> subtaskMap = new HashMap<>();
-    protected Map<Integer, Epic> epicMap = new HashMap<>();
-    protected TreeSet<Task> priorizedTasks = new TreeSet<>(new TaskPriorityComparator());
+    public final HistoryManager historyManager = Managers.getDefaultHistory();
+    protected final Map<Integer, Task> taskMap = new HashMap<>();
+    protected final Map<Integer, SubTask> subtaskMap = new HashMap<>();
+    protected final Map<Integer, Epic> epicMap = new HashMap<>();
+    protected final Set<Task> priorizedTasks = new TreeSet<>(new TaskPriorityComparator());
     private int idCounter = -1;
 
     public boolean checkTaskTimeCrossing(Task task) {
@@ -25,7 +27,7 @@ public class InMemoryTaskManager implements TaskManager {
         return !filteredCrosses.isEmpty();
     }
 
-    public void setIdCounter(int idCounter) {
+    protected void setIdCounter(int idCounter) {
         this.idCounter = idCounter;
     }
 
@@ -129,13 +131,14 @@ public class InMemoryTaskManager implements TaskManager {
         if (this.checkTaskTimeCrossing(epic)) {
             return;
         }
-        checkStatus(epic);
+        updateStatus(epic);
+        updateTimeOfEpic(epic);
         epicMap.put(epic.getId(), epic);
         findAndUpdatePriorizedTask(epic);
     }
 
     @Override
-    public void checkStatus(Epic epic) {
+    public void updateStatus(Epic epic) {
         List<SubTask> subtasks = epic.getSubTasks();
         if (subtasks.isEmpty()) {
             epic.setStatus(TaskStatus.NEW);
@@ -164,6 +167,30 @@ public class InMemoryTaskManager implements TaskManager {
         } else if (tasksNew == subtasks.size()) {
             epic.setStatus(TaskStatus.NEW);
         }
+    }
+
+    public void updateTimeOfEpic(Epic epic) {
+        List<SubTask> subtasks = epic.getSubTasks();
+        if (subtasks.isEmpty()) {
+            epic.setStartTime(LocalDateTime.now());
+            epic.setDuration(Duration.ZERO);
+            epic.setEndTime(LocalDateTime.now());
+            return;
+        }
+
+        final TreeSet<Task> sortedSubTasksSet = new TreeSet<>(new TaskPriorityComparator());
+        sortedSubTasksSet.addAll(subtasks);
+
+        Duration epicDuration = sortedSubTasksSet.stream()
+                .map(Task::getDuration)
+                .reduce(Duration.ZERO, Duration::plus);
+
+        LocalDateTime firstTaskStart = sortedSubTasksSet.first().getStartTime();
+        LocalDateTime lastTaskEnd = sortedSubTasksSet.last().getEndTime();
+
+        epic.setStartTime(firstTaskStart);
+        epic.setEndTime(lastTaskEnd);
+        epic.setDuration(epicDuration);
     }
 
     @Override
@@ -243,7 +270,8 @@ public class InMemoryTaskManager implements TaskManager {
 
         int epicId = subtaskMap.get(task.getId()).getEpic();
         Epic epic = epicMap.get(epicId);
-        checkStatus(epic);
+        updateStatus(epic);
+        updateTimeOfEpic(epic);
     }
 
     @Override
@@ -266,7 +294,7 @@ public class InMemoryTaskManager implements TaskManager {
         List<SubTask> subtasks = epic.getSubTasks() == null ? new ArrayList<>() : epic.getSubTasks();
         subtasks.add(subtask);
         epic.setSubTasks(subtasks);
-        checkStatus(epic);
+        updateStatus(epic);
         return subtask;
     }
 
@@ -294,6 +322,7 @@ public class InMemoryTaskManager implements TaskManager {
         }
         epic.getSubTasks().clear();
         epic.setStatus(TaskStatus.NEW);
+        updateTimeOfEpic(epic);
     }
 
     @Override
@@ -308,7 +337,10 @@ public class InMemoryTaskManager implements TaskManager {
             epicIds.add(subtask.getEpic());
         }
 
-        epicIds.stream().map(epicMap::get).peek(epic -> epic.setStatus(TaskStatus.NEW));
+        epicIds.stream().map(epicMap::get).peek(epic -> {
+            epic.setStatus(TaskStatus.NEW);
+            updateTimeOfEpic(epic);
+        });
         subtaskMap.clear();
     }
 
@@ -338,7 +370,8 @@ public class InMemoryTaskManager implements TaskManager {
         if (priorizedTasks.contains(subtaskToDelete)) {
             priorizedTasks.remove(subtaskToDelete);
         }
-        checkStatus(epic);
+        updateStatus(epic);
+        updateTimeOfEpic(epic);
     }
 
     @Override
