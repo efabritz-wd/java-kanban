@@ -45,7 +45,6 @@ public class Main {
 
         backupManager.createSubTask(subtaskFirst);
         backupManager.createSubTask(subTaskSecond);
-       
         FileBackedTaskManager backupManagerSecond = (FileBackedTaskManager) Managers.getDefaultBackup(new File("./data/tasks.csv"));
         List<String> lines = backupManagerSecond.readFromFile();
         for (String line : lines) {
