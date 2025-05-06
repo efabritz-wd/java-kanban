@@ -4,6 +4,8 @@ import com.yandex.practicum.tasks.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.List;
 
 
@@ -20,6 +22,13 @@ public class Main {
 
         Task taskFirst = new Task("сортировка мусора", "сортировать мусор по категориям");
         Task taskSecond = new Task("собрать документы", "найти и собрать документы");
+        taskFirst.setStartTime(LocalDateTime.now().plusHours(1));
+        taskFirst.setDuration(Duration.ofMinutes(30));
+
+        taskSecond.setStartTime(LocalDateTime.now().plusHours(1).plusMinutes(20));
+        taskSecond.setDuration(Duration.ofMinutes(10));
+
+
         backupManager.createTask(taskFirst);
         backupManager.createTask(taskSecond);
 
@@ -28,9 +37,14 @@ public class Main {
 
         SubTask subtaskFirst = new SubTask("Билеты", "Заказать билеты", epic.getId());
         SubTask subTaskSecond = new SubTask("Документы", "Проверить документы", epic.getId());
+        subtaskFirst.setStartTime(LocalDateTime.now().plusHours(2));
+        subtaskFirst.setDuration(Duration.ofMinutes(10));
+
+        subTaskSecond.setStartTime(LocalDateTime.now().plusHours(2).plusMinutes(30));
+        subTaskSecond.setDuration(Duration.ofMinutes(10));
+
         backupManager.createSubTask(subtaskFirst);
         backupManager.createSubTask(subTaskSecond);
-
         FileBackedTaskManager backupManagerSecond = (FileBackedTaskManager) Managers.getDefaultBackup(new File("./data/tasks.csv"));
         List<String> lines = backupManagerSecond.readFromFile();
         for (String line : lines) {

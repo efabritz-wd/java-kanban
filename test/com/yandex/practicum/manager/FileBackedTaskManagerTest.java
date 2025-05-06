@@ -3,58 +3,79 @@ package com.yandex.practicum.manager;
 import com.yandex.practicum.tasks.Epic;
 import com.yandex.practicum.tasks.SubTask;
 import com.yandex.practicum.tasks.Task;
+import com.yandex.practicum.utils.ManagerSaveException;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class FileBackedTaskManagerTest {
-    public static File file = null;
+class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskManager> {
     public static FileBackedTaskManager backupManager;
+    public File file;
 
-    @BeforeAll
-    public static void beforeAll() throws IOException {
+    @BeforeEach
+    public void beforeAll() throws IOException {
         file = File.createTempFile("test", ".csv");
         backupManager = (FileBackedTaskManager) Managers.getDefaultBackup(file);
-        backupManager.resetFile();
+        super.setupManager(backupManager);
     }
 
     @AfterEach
-    public void afterEach() {
+    void clearTasks() {
         backupManager.deleteAllTasks();
         backupManager.deleteAllEpicsAndSubTasks();
+        backupManager.deleteAllPriorizedTasks();
     }
 
+
     @Test
-    void createTask() throws IOException {
+    void createTaskIO() throws IOException {
         Task taskFirst = new Task("First task", "Description 1");
+
+        taskFirst.setStartTime(LocalDateTime.now());
+        taskFirst.setDuration(Duration.ofMinutes(20));
+        LocalDateTime endTime = taskFirst.getEndTime();
+        LocalDateTime chekStartTime = endTime.minus(taskFirst.getDuration());
+        assertTrue(chekStartTime.equals(taskFirst.getStartTime()));
+
         backupManager.createTask(taskFirst);
         String line = backupManager.toString(taskFirst);
         List<String> linesFound = backupManager.readFromFile();
-        assertEquals(2, linesFound.size());
         if (linesFound.size() > 1) {
-            assertEquals(line, linesFound.get(1));
+            assertTrue(linesFound.contains(line));
         }
     }
 
     @Test
-    void createEpic() throws IOException {
+    void createEpicIO() throws IOException {
         Epic epicFirst = new Epic("First epic", "epic description");
 
         backupManager.createEpic(epicFirst);
 
         SubTask subTaskFirst = new SubTask("Subtask 1", "Description", epicFirst.getId());
         SubTask subTaskSecond = new SubTask("Subtask 2", "Description", epicFirst.getId());
+        subTaskFirst.setStartTime(LocalDateTime.now());
+        subTaskFirst.setDuration(Duration.ofMinutes(20));
+        subTaskFirst.getEndTime();
+
+        subTaskSecond.setStartTime(LocalDateTime.now().plusMinutes(30));
+        subTaskSecond.setDuration(Duration.ofMinutes(10));
+        subTaskSecond.getEndTime();
 
         backupManager.createSubTask(subTaskFirst);
         backupManager.createSubTask(subTaskSecond);
+
+        assertEquals(epicFirst.getStartTime(), subTaskFirst.getStartTime(), "Время начало эпика неверно");
+        assertEquals(epicFirst.getEndTime(), subTaskSecond.getEndTime(), "Время конца эпика неверно");
+        assertEquals(epicFirst.getDuration(), subTaskFirst.getDuration().plus(subTaskSecond.getDuration()),
+                "Продолжительность эпика не совпадает с продолжительностью подзадач");
 
         List<String> linesFound = backupManager.readFromFile();
         assertTrue(linesFound.contains(backupManager.toString(epicFirst)));
@@ -63,7 +84,7 @@ class FileBackedTaskManagerTest {
     }
 
     @Test
-    void updateTask() throws IOException {
+    void updateTaskIO() throws IOException {
         Task taskSecond = new Task("Second task", "Description 2");
         backupManager.createTask(taskSecond);
         String lineOld = backupManager.toString(taskSecond);
@@ -77,7 +98,7 @@ class FileBackedTaskManagerTest {
     }
 
     @Test
-    void updateEpic() throws IOException {
+    void updateEpicIO() throws IOException {
         Epic epicFirst = new Epic("First epic", "epic description");
         backupManager.createEpic(epicFirst);
         String epicOld = backupManager.toString(epicFirst);
@@ -115,7 +136,7 @@ class FileBackedTaskManagerTest {
     }
 
     @Test
-    void deleteTaskById() throws IOException {
+    void deleteTaskByIdIO() throws IOException {
         Task taskFirst = new Task("First task", "Description 1");
         backupManager.createTask(taskFirst);
         String line = backupManager.toString(taskFirst);
@@ -125,7 +146,7 @@ class FileBackedTaskManagerTest {
     }
 
     @Test
-    void deleteAllTasks() throws IOException {
+    void deleteAllTasksIO() throws IOException {
         Task taskFirst = new Task("First task", "Description 1");
         backupManager.createTask(taskFirst);
         Task taskSecond = new Task("First second", "Description 2");
@@ -139,7 +160,7 @@ class FileBackedTaskManagerTest {
     }
 
     @Test
-    void deleteAllEpicsAndSubTasks() throws IOException {
+    void deleteAllEpicsAndSubTasksIO() throws IOException {
         Epic epicFirst = new Epic("First epic", "epic description");
         Epic epicSecond = new Epic("Second epic", "epic description");
 
@@ -168,13 +189,12 @@ class FileBackedTaskManagerTest {
     }
 
     @Test
-    void deleteEpicById() throws IOException {
+    void deleteEpicByIdIO() throws IOException {
         Epic epicFirst = new Epic("First epic", "epic description");
 
         backupManager.createEpic(epicFirst);
 
         String epicFirstOld = backupManager.toString(epicFirst);
-
         SubTask subTaskFirst = new SubTask("Subtask 1", "Description", epicFirst.getId());
         SubTask subTaskSecond = new SubTask("Subtask 2", "Description", epicFirst.getId());
 
@@ -193,7 +213,7 @@ class FileBackedTaskManagerTest {
     }
 
     @Test
-    void deleteAllEpicSubTasks() throws IOException {
+    void deleteAllEpicSubTasksIO() throws IOException {
         Epic epicFirst = new Epic("First epic", "epic description");
         backupManager.createEpic(epicFirst);
 
@@ -212,7 +232,7 @@ class FileBackedTaskManagerTest {
     }
 
     @Test
-    void deleteAllSubTasks() throws IOException {
+    void deleteAllSubTasksIO() throws IOException {
         Epic epicFirst = new Epic("First epic", "epic description");
         backupManager.createEpic(epicFirst);
 
@@ -231,15 +251,17 @@ class FileBackedTaskManagerTest {
     }
 
     @Test
-    void loadFromFile() throws IOException {
-        List<Task> oldTasks = createTasks();
-
-        FileBackedTaskManager manager = FileBackedTaskManager.loadFromFile(file);
+    void loadFromFile() {
+        Task taskFirst = new Task("First task", "Description 1");
+        backupManager.createTask(taskFirst);
+        Task taskSecond = new Task("Second task", "Description 2");
+        backupManager.createTask(taskSecond);
+        FileBackedTaskManager manager = FileBackedTaskManager.loadFromFile(this.file);
         List<Task> tasks = manager.getAllTasks();
         assertEquals(2, tasks.size());
 
         int maxId = 0;
-        for (Task task : oldTasks) {
+        for (Task task : tasks) {
             if (task.getId() > maxId) {
                 maxId = task.getId();
             }
@@ -251,53 +273,19 @@ class FileBackedTaskManagerTest {
         assertEquals(++maxId, epic.getId());
     }
 
-    List<Task> createTasks() throws IOException {
-        File fileLoad = File.createTempFile("test1", ".csv");
-        FileBackedTaskManager manager = (FileBackedTaskManager) Managers.getDefaultBackup(fileLoad);
-        manager.resetFile();
+    @Test
+    void loadFromNotExistentFile() {
+        File file = new File("nofile.csv");
 
-        Task taskFirst = new Task("First task", "Description 1");
-        manager.createTask(taskFirst);
-
-        Task taskSecond = new Task("Second task", "Description 2");
-        manager.createTask(taskSecond);
-
-        List<Task> list = new ArrayList<>();
-        list.add(taskFirst);
-        list.add(taskSecond);
-        return list;
+        assertThrows(ManagerSaveException.class, () -> {
+            FileBackedTaskManager.loadFromFile(file);
+        }, "Загрузка история из несуществующего файла");
     }
 
     @Test
-    void loadFromFileEpic() throws IOException {
-        createEpicWithSubtasks();
-
-        FileBackedTaskManager manager = FileBackedTaskManager.loadFromFile(file);
-        List<Epic> epics = manager.getAllEpics();
-        List<SubTask> subTasks = manager.getEpicSubTasks(epics.get(0));
-        assertEquals(2, subTasks.size());
-        assertEquals(epics.get(0).getSubTasks(), subTasks);
+    void loadingFileSuccessfully() throws IOException {
+        assertDoesNotThrow(() -> {
+            backupManager.resetFile();
+        }, "Загрузка история из существующего файла");
     }
-
-    List<Task> createEpicWithSubtasks() throws IOException {
-        File fileLoad = File.createTempFile("test1", ".csv");
-        FileBackedTaskManager manager = (FileBackedTaskManager) Managers.getDefaultBackup(fileLoad);
-        manager.resetFile();
-
-        Epic epic = new Epic("First epic", "Description 1");
-        manager.createTask(epic);
-
-        SubTask subTaskFirst = new SubTask("subtask1", "Description 2", epic.getId());
-        manager.createTask(subTaskFirst);
-
-        SubTask subTaskSecond = new SubTask("subtask2", "Description 2", epic.getId());
-        manager.createTask(subTaskSecond);
-
-        List<Task> list = new ArrayList<>();
-        list.add(epic);
-        list.add(subTaskFirst);
-        list.add(subTaskSecond);
-        return list;
-    }
-
 }

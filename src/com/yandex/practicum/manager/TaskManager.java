@@ -25,7 +25,7 @@ public interface TaskManager {
 
     void updateEpic(Epic epic);
 
-    void checkStatus(Epic epic);
+    void updateStatus(Epic epic);
 
     List<Epic> getAllEpics();
 
@@ -52,5 +52,5 @@ public interface TaskManager {
 
     void deleteSubTaskById(int id);
 
-    void setIdCounter(int maxId);
+    void deleteAllPriorizedTasks();
 }

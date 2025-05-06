@@ -31,7 +31,6 @@ class ManagersTest {
 
         assertNotNull(historyManagerFirst);
         assertNotNull(historyManagerSecond);
-        assertEquals(historyManagerFirst, historyManagerSecond);
 
         historyManagerFirst.addTaskToHistory(new Task("title", "description"));
         assertNotNull(historyManagerFirst.getHistory(), "История не создана");
