@@ -25,6 +25,7 @@ public class Task {
         this.description = description;
         this.startTime = LocalDateTime.now();
         this.duration = Duration.ZERO;
+        this.endTime = LocalDateTime.now();
     }
 
     public Duration getDuration() {
@@ -44,6 +45,9 @@ public class Task {
     }
 
     public LocalDateTime getEndTime() {
+        if (this.type.equals(TaskType.EPIC)) {
+            return this.endTime;
+        }
         try {
             this.endTime = this.startTime.plus(this.duration);
             return this.endTime;
