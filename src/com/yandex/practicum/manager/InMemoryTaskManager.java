@@ -276,9 +276,10 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public SubTask createSubTask(SubTask subtask) {
         this.checkTaskTimeCrossing(subtask);
-        
+
         int id = getNextId();
         subtask.setId(id);
+
         if (subtask.getEpic() == subtask.getId()) {
             return null;
         }
