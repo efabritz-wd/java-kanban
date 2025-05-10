@@ -8,10 +8,9 @@ import com.yandex.practicum.utils.NotFoundException;
 import java.io.IOException;
 
 public class HTTPPrioritizedHandler extends BaseHttpHandler implements HttpHandler {
-    private TaskManager taskManager;
 
     public HTTPPrioritizedHandler(TaskManager taskManager) {
-        this.taskManager = taskManager;
+        super(taskManager);
     }
 
     @Override
@@ -23,7 +22,7 @@ public class HTTPPrioritizedHandler extends BaseHttpHandler implements HttpHandl
                 case "GET":
                     handlePrioritizedGetRequest(httpExchange);
                 default:
-                    sendNotFound(httpExchange);
+                    sendText(httpExchange, "Method is not supported", 405);
             }
         } catch (NotFoundException e) {
             sendNotFound(httpExchange);

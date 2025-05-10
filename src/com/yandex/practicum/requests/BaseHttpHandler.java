@@ -7,6 +7,7 @@ import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import com.sun.net.httpserver.HttpExchange;
+import com.yandex.practicum.manager.TaskManager;
 import com.yandex.practicum.tasks.*;
 
 import java.io.IOException;
@@ -18,11 +19,16 @@ import java.time.format.DateTimeFormatter;
 
 public class BaseHttpHandler {
     private static final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm dd:MM:yyyy");
-    Gson gson = new GsonBuilder()
+    public TaskManager taskManager;
+    protected Gson gson = new GsonBuilder()
             .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter())
             .registerTypeAdapter(Duration.class, new DurationTypeAdapter())
             .setPrettyPrinting()
             .create();
+
+    public BaseHttpHandler(TaskManager taskManager) {
+        this.taskManager = taskManager;
+    }
 
     public Gson getGson() {
         return gson;
@@ -38,7 +44,7 @@ public class BaseHttpHandler {
 
     protected void sendNotFound(HttpExchange h) throws IOException {
         byte[] resp = "Not found".getBytes(StandardCharsets.UTF_8);
-        h.getResponseHeaders().add("Content-Type", "application/json;charset=utf-8");
+        h.getResponseHeaders();
         h.sendResponseHeaders(404, 0);
         h.getResponseBody().write(resp);
         h.close();
@@ -46,7 +52,7 @@ public class BaseHttpHandler {
 
     protected void sendHasInteractions(HttpExchange h) throws IOException {
         byte[] resp = "Tasks interact".getBytes(StandardCharsets.UTF_8);
-        h.getResponseHeaders().add("Content-Type", "application/json;charset=utf-8");
+        h.getResponseHeaders();
         h.sendResponseHeaders(406, 0);
         h.getResponseBody().write(resp);
         h.close();
@@ -142,12 +148,12 @@ public class BaseHttpHandler {
 
         @Override
         public void write(JsonWriter out, Duration duration) throws IOException {
-            out.value(duration.toMinutes()); // Сериализация в секунды
+            out.value(duration.toMinutes());
         }
 
         @Override
         public Duration read(JsonReader in) throws IOException {
-            long seconds = in.nextLong(); // Десериализация из секунд
+            long seconds = in.nextLong();
             return Duration.ofMinutes(seconds);
         }
     }

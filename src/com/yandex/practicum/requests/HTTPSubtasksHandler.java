@@ -16,10 +16,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 public class HTTPSubtasksHandler extends BaseHttpHandler implements HttpHandler {
-    private TaskManager taskManager;
 
     public HTTPSubtasksHandler(TaskManager taskManager) {
-        this.taskManager = taskManager;
+        super(taskManager);
     }
 
     @Override
@@ -74,8 +73,12 @@ public class HTTPSubtasksHandler extends BaseHttpHandler implements HttpHandler 
                 try {
                     Task taskToUpdate = taskManager.getSubTaskById(jsonObject.get("id").getAsInt());
                     Task taskWithUpdatedParams = setTaskParameters(jsonObject, taskToUpdate, false);
-                    taskManager.updateTask(taskWithUpdatedParams);
-                    sendText(httpExchange, "subtask updated", 201);
+                    try {
+                        taskManager.updateTask(taskWithUpdatedParams);
+                        sendText(httpExchange, "subtask updated", 201);
+                    } catch (IOException e) {
+                        sendHasInteractions(httpExchange);
+                    }
                 } catch (Exception e) {
                     sendText(httpExchange, "Error during subtask update", 400);
                 }

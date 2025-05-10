@@ -22,13 +22,12 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 
 class HTTPPrioritizedHandlerTest {
-
     HttpServer httpServer;
     File file = File.createTempFile("test", ".csv");
     TaskManager manager = Managers.getDefaultBackup(file);
     HTTPTaskServer taskServer = new HTTPTaskServer(file, manager);
 
-    Gson gson = new BaseHttpHandler().getGson();
+    Gson gson = new BaseHttpHandler(manager).getGson();
 
     HTTPPrioritizedHandlerTest() throws IOException {
     }

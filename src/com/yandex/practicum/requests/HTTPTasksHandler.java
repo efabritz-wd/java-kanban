@@ -17,10 +17,9 @@ import java.util.Optional;
 
 
 public class HTTPTasksHandler extends BaseHttpHandler implements HttpHandler {
-    private TaskManager taskManager;
 
     public HTTPTasksHandler(TaskManager taskManager) {
-        this.taskManager = taskManager;
+        super(taskManager);
     }
 
     @Override
@@ -75,8 +74,12 @@ public class HTTPTasksHandler extends BaseHttpHandler implements HttpHandler {
                 try {
                     Task taskToUpdate = taskManager.getTaskById(jsonObject.get("id").getAsInt());
                     Task taskWithUpdatedParams = setTaskParameters(jsonObject, taskToUpdate, false);
-                    taskManager.updateTask(taskWithUpdatedParams);
-                    sendText(httpExchange, "Task updated", 201);
+                    try {
+                        taskManager.updateTask(taskWithUpdatedParams);
+                        sendText(httpExchange, "Task updated", 201);
+                    } catch (Exception e) {
+                        sendHasInteractions(httpExchange);
+                    }
                 } catch (Exception e) {
                     sendText(httpExchange, "Error during task update", 400);
                 }

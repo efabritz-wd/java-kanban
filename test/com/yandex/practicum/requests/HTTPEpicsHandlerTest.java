@@ -24,17 +24,15 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 class HTTPEpicsHandlerTest {
-
     HttpServer httpServer;
     File file = File.createTempFile("test", ".csv");
     TaskManager manager = Managers.getDefaultBackup(file);
     HTTPTaskServer taskServer = new HTTPTaskServer(file, manager);
 
-    Gson gson = new BaseHttpHandler().getGson();
+    Gson gson = new BaseHttpHandler(manager).getGson();
 
     HTTPEpicsHandlerTest() throws IOException {
     }
-
 
     @BeforeEach
     public void setUp() throws IOException {
@@ -67,7 +65,7 @@ class HTTPEpicsHandlerTest {
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
         assertEquals(201, response.statusCode());
-        
+
         List<Epic> tasksFromManager = manager.getAllEpics();
 
         assertNotNull(tasksFromManager, "Задачи не возвращаются");
@@ -130,12 +128,16 @@ class HTTPEpicsHandlerTest {
         Epic taskFirst = new Epic("Epic 1", "Testing epic 1");
         taskFirst.setStatus(TaskStatus.NEW);
         taskFirst.setDuration(Duration.ofMinutes(5));
-        taskFirst.setEndTime(LocalDateTime.now());
+        taskFirst.setStartTime(LocalDateTime.now().plusMinutes(5));
         taskFirst.setType(TaskType.TASK);
 
         Epic taskSecond = new Epic("Epic 2", "Testing epic 1");
+        taskFirst.setDuration(Duration.ofMinutes(10));
+        taskFirst.setStartTime(LocalDateTime.now().plusMinutes(15));
+
         manager.createEpic(taskFirst);
         manager.createEpic(taskSecond);
+
         SubTask subTask = new SubTask("subtask 1", "subtask description", taskFirst.getId());
         subTask.setDuration(Duration.ofMinutes(10));
         subTask.setStartTime(LocalDateTime.now().plusHours(2));

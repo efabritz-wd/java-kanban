@@ -12,10 +12,9 @@ import java.util.List;
 
 
 public class HTTPHistoryHandler extends BaseHttpHandler implements HttpHandler {
-    private TaskManager taskManager;
 
     public HTTPHistoryHandler(TaskManager taskManager) throws IOException {
-        this.taskManager = taskManager;
+        super(taskManager);
     }
 
     @Override
@@ -27,7 +26,7 @@ public class HTTPHistoryHandler extends BaseHttpHandler implements HttpHandler {
                 case "GET":
                     handleHistoryGetRequest(httpExchange);
                 default:
-                    sendNotFound(httpExchange);
+                    sendText(httpExchange, "Method is not supported", 405);
             }
         } catch (NotFoundException e) {
             sendNotFound(httpExchange);

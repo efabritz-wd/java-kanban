@@ -16,10 +16,9 @@ import java.util.List;
 import java.util.Optional;
 
 public class HTTPEpicsHandler extends BaseHttpHandler implements HttpHandler {
-    private TaskManager taskManager;
 
     public HTTPEpicsHandler(TaskManager taskManager) {
-        this.taskManager = taskManager;
+        super(taskManager);
     }
 
     @Override
@@ -86,8 +85,12 @@ public class HTTPEpicsHandler extends BaseHttpHandler implements HttpHandler {
                 try {
                     Task taskToUpdate = taskManager.getEpicById(jsonObject.get("id").getAsInt());
                     Task taskWithUpdatedParams = setTaskParameters(jsonObject, taskToUpdate, false);
-                    taskManager.updateEpic((Epic) taskWithUpdatedParams);
-                    sendText(httpExchange, "Epic updated", 201);
+                    try {
+                        taskManager.updateEpic((Epic) taskWithUpdatedParams);
+                        sendText(httpExchange, "Epic updated", 201);
+                    } catch (Exception e) {
+                        sendHasInteractions(httpExchange);
+                    }
                 } catch (Exception e) {
                     sendText(httpExchange, "Error during epic update", 400);
                 }
