@@ -2,6 +2,7 @@ package com.yandex.practicum.manager;
 
 import com.yandex.practicum.tasks.*;
 import com.yandex.practicum.utils.TaskPriorityComparator;
+import com.yandex.practicum.utils.TaskTimeCrossingException;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -17,14 +18,16 @@ public class InMemoryTaskManager implements TaskManager {
     protected final Set<Task> priorizedTasks = new TreeSet<>(new TaskPriorityComparator());
     private int idCounter = -1;
 
-    public boolean checkTaskTimeCrossing(Task task) {
+    public void checkTaskTimeCrossing(Task task) {
         List<Task> listOfPriorities = getPrioritizedTasks();
         List<Task> filteredCrosses = listOfPriorities.stream().filter(taskInList ->
                 (task.getStartTime().isAfter(taskInList.getStartTime()) && task.getStartTime().isBefore(taskInList.getEndTime()) ||
                         task.getEndTime().isAfter(taskInList.getStartTime()) && task.getEndTime().isBefore(taskInList.getEndTime()))
         ).toList();
 
-        return !filteredCrosses.isEmpty();
+        if (!filteredCrosses.isEmpty()) {
+            throw new TaskTimeCrossingException("Время задач пересекается");
+        }
     }
 
     protected void setIdCounter(int idCounter) {
@@ -48,6 +51,7 @@ public class InMemoryTaskManager implements TaskManager {
         priorizedTasks.add(task);
     }
 
+    @Override
     public List<Task> getPrioritizedTasks() {
         return new ArrayList<>(this.priorizedTasks);
     }
@@ -55,9 +59,8 @@ public class InMemoryTaskManager implements TaskManager {
     /* Task */
     @Override
     public void createTask(Task task) {
-        if (this.checkTaskTimeCrossing(task)) {
-            return;
-        }
+        this.checkTaskTimeCrossing(task);
+
         int id = getNextId();
         task.setId(id);
         taskMap.put(task.getId(), task);
@@ -68,18 +71,18 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void updateTask(Task task) {
-        if (this.checkTaskTimeCrossing(task)) {
-            return;
-        }
+        this.checkTaskTimeCrossing(task);
+
         taskMap.put(task.getId(), task);
         findAndUpdatePriorizedTask(task);
     }
 
     @Override
     public List<Task> getAllTasks() {
-        return taskMap.values().stream()
+        List<Task> tasks = taskMap.values().stream()
                 .peek(historyManager::addTaskToHistory)
                 .collect(Collectors.toList());
+        return tasks;
     }
 
     @Override
@@ -115,9 +118,7 @@ public class InMemoryTaskManager implements TaskManager {
     /* Epic */
     @Override
     public void createEpic(Epic epic) {
-        if (this.checkTaskTimeCrossing(epic)) {
-            return;
-        }
+        this.checkTaskTimeCrossing(epic);
         int id = getNextId();
         epic.setId(id);
         epicMap.put(epic.getId(), epic);
@@ -128,9 +129,8 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void updateEpic(Epic epic) {
-        if (this.checkTaskTimeCrossing(epic)) {
-            return;
-        }
+        this.checkTaskTimeCrossing(epic);
+
         updateStatus(epic);
         updateTimeOfEpic(epic);
         epicMap.put(epic.getId(), epic);
@@ -262,9 +262,8 @@ public class InMemoryTaskManager implements TaskManager {
     /* SubTask */
     @Override
     public void updateSubTask(SubTask task) {
-        if (this.checkTaskTimeCrossing(task)) {
-            return;
-        }
+        this.checkTaskTimeCrossing(task);
+
         subtaskMap.put(task.getId(), task);
         findAndUpdatePriorizedTask(task);
 
@@ -276,11 +275,11 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public SubTask createSubTask(SubTask subtask) {
-        if (this.checkTaskTimeCrossing(subtask)) {
-            return null;
-        }
+        this.checkTaskTimeCrossing(subtask);
+
         int id = getNextId();
         subtask.setId(id);
+
         if (subtask.getEpic() == subtask.getId()) {
             return null;
         }

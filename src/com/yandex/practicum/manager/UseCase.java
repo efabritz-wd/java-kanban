@@ -9,9 +9,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 
-public class Main {
+public class UseCase {
 
-    public static void main(String[] args) throws IOException {
+    public static void start(String[] args) throws IOException {
         useCase2();
     }
 

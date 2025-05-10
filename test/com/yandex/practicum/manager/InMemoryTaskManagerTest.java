@@ -4,6 +4,7 @@ import com.yandex.practicum.tasks.Epic;
 import com.yandex.practicum.tasks.SubTask;
 import com.yandex.practicum.tasks.Task;
 import com.yandex.practicum.tasks.TaskStatus;
+import com.yandex.practicum.utils.TaskTimeCrossingException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -115,8 +116,9 @@ class InMemoryTaskManagerTest extends TaskManagerTest<InMemoryTaskManager> {
         taskSecond.setStartTime(LocalDateTime.now().plusHours(1).plusMinutes(20));
         taskSecond.setDuration(Duration.ofMinutes(10));
         taskManager.createTask(taskFirst);
-        assertTrue(((InMemoryTaskManager) taskManager).checkTaskTimeCrossing(taskSecond));
-        taskManager.createTask(taskSecond);
+        assertThrows(TaskTimeCrossingException.class, () -> {
+            ((InMemoryTaskManager) taskManager).checkTaskTimeCrossing(taskSecond);
+        });
 
         Epic epic = new Epic("1 эпик", "Описание");
         taskManager.createEpic(epic);
@@ -130,7 +132,9 @@ class InMemoryTaskManagerTest extends TaskManagerTest<InMemoryTaskManager> {
         subTaskSecond.setDuration(Duration.ofMinutes(10));
 
         taskManager.createSubTask(subtaskFirst);
-        assertFalse(((InMemoryTaskManager) taskManager).checkTaskTimeCrossing(subTaskSecond));
+        assertDoesNotThrow(() -> {
+            ((InMemoryTaskManager) taskManager).checkTaskTimeCrossing(subTaskSecond);
+        });
         taskManager.createSubTask(subTaskSecond);
 
         assertFalse(taskManager.getAllTasks().contains(taskSecond));
